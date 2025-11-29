@@ -25,6 +25,7 @@ export function KanbanBoard() {
     const [activeId, setActiveId] = useState<string | null>(null)
     const [newTask, setNewTask] = useState("")
     const [selectedDay, setSelectedDay] = useState("Monday")
+    const [isOrganizing, setIsOrganizing] = useState(false)
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -206,7 +207,14 @@ export function KanbanBoard() {
                     <Button type="submit"><Plus className="h-4 w-4" /></Button>
                 </form>
                 <div className="flex gap-2 w-full md:w-auto justify-end">
-                    <Button variant="outline" onClick={clearWeek} title="Clear Week">
+                    <Button
+                        variant={isOrganizing ? "secondary" : "outline"}
+                        onClick={() => setIsOrganizing(!isOrganizing)}
+                        className="md:hidden"
+                    >
+                        {isOrganizing ? "Done" : "Organize"}
+                    </Button>
+                    <Button variant="outline" onClick={clearWeek} title="Clear Week" className="hidden md:flex">
                         <Eraser className="h-4 w-4 mr-2" /> <span className="hidden md:inline">Clear Week</span>
                     </Button>
                     <Button variant="outline" onClick={exportPDF} disabled={isExporting} title="Export PDF">
@@ -266,6 +274,7 @@ export function KanbanBoard() {
                                             task={task}
                                             onDelete={deleteTask}
                                             onStatusChange={updateTaskStatus}
+                                            isOrganizing={isOrganizing}
                                         />
                                     ))}
                                 </div>
