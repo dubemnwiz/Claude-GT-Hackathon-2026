@@ -25,12 +25,11 @@ export function KanbanBoard() {
     const [activeId, setActiveId] = useState<string | null>(null)
     const [newTask, setNewTask] = useState("")
     const [selectedDay, setSelectedDay] = useState("Monday")
-    const [isOrganizing, setIsOrganizing] = useState(false)
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 5, // Small movement required to start drag
+                distance: 8, // Small movement required to start drag
             },
         }),
         useSensor(KeyboardSensor, {
@@ -207,13 +206,6 @@ export function KanbanBoard() {
                     <Button type="submit"><Plus className="h-4 w-4" /></Button>
                 </form>
                 <div className="flex gap-2 w-full md:w-auto justify-end">
-                    <Button
-                        variant={isOrganizing ? "secondary" : "outline"}
-                        onClick={() => setIsOrganizing(!isOrganizing)}
-                        className="md:hidden"
-                    >
-                        {isOrganizing ? "Done" : "Organize"}
-                    </Button>
                     <Button variant="outline" onClick={clearWeek} title="Clear Week" className="hidden md:flex">
                         <Eraser className="h-4 w-4 mr-2" /> <span className="hidden md:inline">Clear Week</span>
                     </Button>
@@ -259,26 +251,20 @@ export function KanbanBoard() {
                                 {day}
                                 <span className="text-xs text-muted-foreground font-normal">{dayTasks.length} tasks</span>
                             </h3>
-                            <SortableContext
-                                id={day} // The day acts as the container ID
-                                items={dayTasks.map(t => t.id)}
-                                strategy={verticalListSortingStrategy}
-                            >
-                                <div className="space-y-2 min-h-[10px]"> {/* min-h ensures drop target exists if empty */}
-                                    {dayTasks.length === 0 && (
-                                        <p className="text-xs text-muted-foreground italic pl-2">No tasks</p>
-                                    )}
-                                    {dayTasks.map(task => (
-                                        <MobileTaskItem
-                                            key={task.id}
-                                            task={task}
-                                            onDelete={deleteTask}
-                                            onStatusChange={updateTaskStatus}
-                                            isOrganizing={isOrganizing}
-                                        />
-                                    ))}
-                                </div>
-                            </SortableContext>
+                            <div className="space-y-2">
+                                {dayTasks.length === 0 && (
+                                    <p className="text-xs text-muted-foreground italic pl-2">No tasks</p>
+                                )}
+                                {dayTasks.map(task => (
+                                    <MobileTaskItem
+                                        key={task.id}
+                                        task={task}
+                                        onDelete={deleteTask}
+                                        onStatusChange={updateTaskStatus}
+                                        onUpdateDay={updateTaskDay}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     )
                 })}
