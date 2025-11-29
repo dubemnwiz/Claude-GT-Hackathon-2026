@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash, FileDown, Eraser, CheckCircle2, Calendar } from "lucide-react"
 import { KanbanColumn } from "./KanbanColumn"
 import { KanbanCard } from "./KanbanCard"
+import { MobileTaskItem } from "./MobileTaskItem"
 import { jsPDF } from "jspdf"
 import html2canvas from "html2canvas"
 
@@ -26,7 +27,11 @@ export function KanbanBoard() {
     const [selectedDay, setSelectedDay] = useState("Monday")
 
     const sensors = useSensors(
-        useSensor(PointerSensor),
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8, // Require 8px movement to start drag (prevents accidental drags on touch)
+            },
+        }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })
@@ -246,48 +251,25 @@ export function KanbanBoard() {
                                 {day}
                                 <span className="text-xs text-muted-foreground font-normal">{dayTasks.length} tasks</span>
                             </h3>
-                            <div className="space-y-2">
-                                {dayTasks.length === 0 && (
-                                    <p className="text-xs text-muted-foreground italic pl-2">No tasks</p>
-                                )}
-                                {dayTasks.map(task => (
-                                    <div key={task.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
-                                        <button
-                                            onClick={() => updateTaskStatus(task.id, task.status === 'COMPLETED' ? 'NOT_STARTED' : 'COMPLETED')}
-                                            className={`h-5 w-5 rounded-full border flex items-center justify-center transition-colors shrink-0 ${task.status === 'COMPLETED'
-                                                ? 'bg-green-500 border-green-500 text-black'
-                                                : 'border-zinc-500 hover:border-white'
-                                                }`}
-                                        >
-                                            {task.status === 'COMPLETED' && <CheckCircle2 className="h-3 w-3" />}
-                                        </button>
-
-                                        <span className={`flex-1 text-sm ${task.status === 'COMPLETED' ? 'text-muted-foreground line-through' : 'text-white'}`}>
-                                            {task.content}
-                                        </span>
-
-                                        <div className="flex items-center gap-1">
-                                            <Select value={task.day} onValueChange={(val) => updateTaskDay(task.id, val)}>
-                                                <SelectTrigger className="h-8 w-8 p-0 border-0 bg-transparent hover:bg-white/10 focus:ring-0">
-                                                    <Calendar className="h-4 w-4 text-zinc-400" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {days.map(d => (
-                                                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-
-                                            <button
-                                                onClick={() => deleteTask(task.id)}
-                                                className="text-zinc-500 hover:text-red-400 p-2 hover:bg-white/10 rounded-full"
-                                            >
-                                                <Trash className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            <SortableContext
+                                id={day} // The day acts as the container ID
+                                items={dayTasks.map(t => t.id)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                <div className="space-y-2 min-h-[10px]"> {/* min-h ensures drop target exists if empty */}
+                                    {dayTasks.length === 0 && (
+                                        <p className="text-xs text-muted-foreground italic pl-2">No tasks</p>
+                                    )}
+                                    {dayTasks.map(task => (
+                                        <MobileTaskItem
+                                            key={task.id}
+                                            task={task}
+                                            onDelete={deleteTask}
+                                            onStatusChange={updateTaskStatus}
+                                        />
+                                    ))}
+                                </div>
+                            </SortableContext>
                         </div>
                     )
                 })}
