@@ -5,7 +5,8 @@ import { DndContext, DragOverlay, closestCorners, KeyboardSensor, PointerSensor,
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Trash, FileDown, Eraser, CheckCircle2 } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Plus, Trash, FileDown, Eraser, CheckCircle2, Calendar } from "lucide-react"
 import { KanbanColumn } from "./KanbanColumn"
 import { KanbanCard } from "./KanbanCard"
 import { jsPDF } from "jspdf"
@@ -22,6 +23,7 @@ export function KanbanBoard() {
     const [tasks, setTasks] = useState<Task[]>([])
     const [activeId, setActiveId] = useState<string | null>(null)
     const [newTask, setNewTask] = useState("")
+    const [selectedDay, setSelectedDay] = useState("Monday")
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -54,7 +56,7 @@ export function KanbanBoard() {
         try {
             const res = await fetch("/api/planning", {
                 method: "POST",
-                body: JSON.stringify({ content: newTask, status: "NOT_STARTED" }),
+                body: JSON.stringify({ content: newTask, status: "NOT_STARTED", day: selectedDay }),
                 headers: { "Content-Type": "application/json" },
             })
             if (res.ok) {
@@ -178,22 +180,32 @@ export function KanbanBoard() {
 
     return (
         <div className="space-y-4 h-full flex flex-col">
-            <div className="flex justify-between items-center">
-                <form onSubmit={addTask} className="flex gap-2">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <form onSubmit={addTask} className="flex gap-2 w-full md:w-auto">
+                    <Select value={selectedDay} onValueChange={setSelectedDay}>
+                        <SelectTrigger className="w-[120px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {days.map(day => (
+                                <SelectItem key={day} value={day}>{day}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     <Input
                         placeholder="Add a new task..."
                         value={newTask}
                         onChange={(e) => setNewTask(e.target.value)}
-                        className="max-w-sm"
+                        className="flex-1 md:w-[300px]"
                     />
                     <Button type="submit"><Plus className="h-4 w-4" /></Button>
                 </form>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full md:w-auto justify-end">
                     <Button variant="outline" onClick={clearWeek} title="Clear Week">
-                        <Eraser className="h-4 w-4 mr-2" /> Clear Week
+                        <Eraser className="h-4 w-4 mr-2" /> <span className="hidden md:inline">Clear Week</span>
                     </Button>
                     <Button variant="outline" onClick={exportPDF} disabled={isExporting} title="Export PDF">
-                        <FileDown className="h-4 w-4 mr-2" /> {isExporting ? "Exporting..." : "Export PDF"}
+                        <FileDown className="h-4 w-4 mr-2" /> <span className="hidden md:inline">{isExporting ? "Exporting..." : "Export PDF"}</span>
                     </Button>
                 </div>
             </div>
@@ -227,43 +239,58 @@ export function KanbanBoard() {
             <div className="md:hidden space-y-8 pb-20">
                 {days.map(day => {
                     const dayTasks = tasks.filter(t => t.day === day)
-                    if (dayTasks.length === 0) return null // Optional: Hide empty days or keep them
 
                     return (
                         <div key={day} className="space-y-3">
-                            <h3 className="font-semibold text-lg text-primary/80 border-b border-white/10 pb-1">{day}</h3>
+                            <h3 className="font-semibold text-lg text-primary/80 border-b border-white/10 pb-1 flex items-center justify-between">
+                                {day}
+                                <span className="text-xs text-muted-foreground font-normal">{dayTasks.length} tasks</span>
+                            </h3>
                             <div className="space-y-2">
+                                {dayTasks.length === 0 && (
+                                    <p className="text-xs text-muted-foreground italic pl-2">No tasks</p>
+                                )}
                                 {dayTasks.map(task => (
                                     <div key={task.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
                                         <button
                                             onClick={() => updateTaskStatus(task.id, task.status === 'COMPLETED' ? 'NOT_STARTED' : 'COMPLETED')}
-                                            className={`h-5 w-5 rounded-full border flex items-center justify-center transition-colors ${task.status === 'COMPLETED'
+                                            className={`h-5 w-5 rounded-full border flex items-center justify-center transition-colors shrink-0 ${task.status === 'COMPLETED'
                                                 ? 'bg-green-500 border-green-500 text-black'
                                                 : 'border-zinc-500 hover:border-white'
                                                 }`}
                                         >
                                             {task.status === 'COMPLETED' && <CheckCircle2 className="h-3 w-3" />}
                                         </button>
+
                                         <span className={`flex-1 text-sm ${task.status === 'COMPLETED' ? 'text-muted-foreground line-through' : 'text-white'}`}>
                                             {task.content}
                                         </span>
-                                        <button
-                                            onClick={() => deleteTask(task.id)}
-                                            className="text-zinc-500 hover:text-red-400 p-1"
-                                        >
-                                            <Trash className="h-4 w-4" />
-                                        </button>
+
+                                        <div className="flex items-center gap-1">
+                                            <Select value={task.day} onValueChange={(val) => updateTaskDay(task.id, val)}>
+                                                <SelectTrigger className="h-8 w-8 p-0 border-0 bg-transparent hover:bg-white/10 focus:ring-0">
+                                                    <Calendar className="h-4 w-4 text-zinc-400" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {days.map(d => (
+                                                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+
+                                            <button
+                                                onClick={() => deleteTask(task.id)}
+                                                className="text-zinc-500 hover:text-red-400 p-2 hover:bg-white/10 rounded-full"
+                                            >
+                                                <Trash className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )
                 })}
-                {tasks.length === 0 && (
-                    <div className="text-center text-muted-foreground py-10">
-                        No tasks yet. Add one above!
-                    </div>
-                )}
             </div>
         </div>
     )
