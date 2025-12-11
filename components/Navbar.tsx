@@ -13,7 +13,7 @@ const routes = [
         href: "/",
     },
     {
-        label: "Diary",
+        label: "Journal",
         href: "/diary",
     },
     {
@@ -27,6 +27,10 @@ const routes = [
     {
         label: "Planning",
         href: "/planning",
+    },
+    {
+        label: "Game",
+        href: "/game",
     },
 ]
 

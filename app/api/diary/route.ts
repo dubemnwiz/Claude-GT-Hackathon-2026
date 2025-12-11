@@ -49,11 +49,16 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const dateString = searchParams.get("date")
 
-    if (!dateString) {
-        return new NextResponse("Date required", { status: 400 })
-    }
-
     try {
+        if (!dateString) {
+            // Return list of dates that have entries
+            const entries = await prisma.diaryEntry.findMany({
+                where: { userId: session.user.id },
+                select: { date: true }
+            })
+            return NextResponse.json(entries.map(e => e.date))
+        }
+
         const entryDate = new Date(dateString)
         const entry = await prisma.diaryEntry.findUnique({
             where: {
