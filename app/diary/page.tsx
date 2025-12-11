@@ -64,8 +64,13 @@ export default function DiaryPage() {
                                     const tileDate = format(date, 'yyyy-MM-dd');
                                     // filledDates might be ISO strings or simpler yyyy-MM-dd, check format
                                     // The API returns Date objects usually as ISO strings
-                                    if (filledDates.some(d => format(new Date(d), 'yyyy-MM-dd') === tileDate)) {
-                                        return 'font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-full';
+                                    if (filledDates.some(d => {
+                                        try {
+                                            return format(new Date(d), 'yyyy-MM-dd') === tileDate;
+                                        } catch { return false; }
+                                    })) {
+                                        // Stronger visual cues: Bold, Color, Background
+                                        return 'font-extrabold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-900/50 rounded-lg shadow-sm border border-blue-200 dark:border-blue-800';
                                     }
                                 }
                                 return null;
