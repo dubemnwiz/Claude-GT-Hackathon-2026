@@ -28,10 +28,6 @@ const routes = [
         label: "Planning",
         href: "/planning",
     },
-    {
-        label: "Game",
-        href: "/game",
-    },
 ]
 
 import { useState } from "react"

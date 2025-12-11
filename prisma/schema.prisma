@@ -28,7 +28,6 @@ model User {
   noteBlocks    NoteBlock[]
   tasks         Task[]
   workoutLogs   WorkoutLog[]
-  stickCricketProgress StickCricketProgress[]
 }
 
 model Account {
@@ -128,11 +127,3 @@ model WorkoutLog {
   createdAt DateTime @default(now())
 }
 
-model StickCricketProgress {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  level     Int      @default(1)
-  highScore Int      @default(0)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  updatedAt DateTime @updatedAt
-}
