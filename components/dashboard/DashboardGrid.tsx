@@ -160,7 +160,7 @@ export function DashboardGrid() {
     if (isLoading) return <div className="flex h-full items-center justify-center text-zinc-500">Loading Mind Dump...</div>
 
     return (
-        <div ref={containerRef} className="relative w-full h-[calc(100vh-100px)] overflow-hidden bg-zinc-50/50 dark:bg-zinc-950/50">
+        <div ref={containerRef} className="relative w-full h-full overflow-hidden bg-zinc-50/50 dark:bg-zinc-950/50">
             {/* Background Pattern */}
             <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05]"
                 style={{
