@@ -1,19 +1,24 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import Link from "next/link"
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const urlError = searchParams.get("error")
+
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
+
+    const errorMessage = error || (urlError ? "Authentication failed. Please try again." : "")
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -53,7 +58,7 @@ export default function LoginPage() {
                                 <Label htmlFor="password">Password</Label>
                                 <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                             </div>
-                            {error && <p className="text-sm text-red-500">{error}</p>}
+                            {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
                         </div>
                         <Button className="w-full mt-4" type="submit">Login</Button>
                         <div className="relative my-4">
@@ -75,5 +80,13 @@ export default function LoginPage() {
                 </CardFooter>
             </Card>
         </div>
+    )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <LoginForm />
+        </Suspense>
     )
 }
