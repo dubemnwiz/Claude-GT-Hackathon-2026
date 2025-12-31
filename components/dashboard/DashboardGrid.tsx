@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus, Trash, GripHorizontal, Palette } from "lucide-react"
+import { Plus, Trash, GripHorizontal, Palette, X } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 import { motion, useMotionValue } from "framer-motion"
 import { cn } from "@/lib/utils"
@@ -231,6 +231,18 @@ export function DashboardGrid() {
                         )}
                         style={{ width: note.width, height: note.height }}
                     >
+                        {/* Delete Button (Subtle X) */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                deleteNote(note.id)
+                            }}
+                            className="absolute top-2 right-2 p-1 text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all z-20 rounded-full hover:bg-black/5 dark:hover:bg-white/10"
+                            title="Delete note"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+
                         {/* Note Header / Drag Handle */}
                         <div className="flex items-center justify-between mb-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-zinc-400 dark:text-zinc-500">
                             <GripHorizontal className="w-5 h-5" />
@@ -250,15 +262,7 @@ export function DashboardGrid() {
                                         title={c.name}
                                     />
                                 ))}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation()
-                                        deleteNote(note.id)
-                                    }}
-                                    className="ml-2 hover:text-red-500 transition-colors"
-                                >
-                                    <Trash className="w-4 h-4" />
-                                </button>
+
                             </div>
                         </div>
 
