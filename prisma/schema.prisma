@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -109,7 +109,7 @@ model NoteBlock {
 model Task {
   id        String   @id @default(cuid())
   content   String
-  notes     String?  @db.Text
+  notes     String?
   status    String   @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, COMPLETED
   day       String   @default("Monday") // Monday, Tuesday, etc.
   userId    String
