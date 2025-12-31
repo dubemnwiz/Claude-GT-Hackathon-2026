@@ -11,6 +11,7 @@ import { format } from "date-fns"
 export function DiaryEditor({ date }: { date: string }) {
     const router = useRouter()
     const [content, setContent] = useState("")
+    const [rating, setRating] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
 
@@ -23,6 +24,7 @@ export function DiaryEditor({ date }: { date: string }) {
                 if (res.ok) {
                     const data = await res.json()
                     setContent(data.content || "")
+                    setRating(data.rating || null)
                 }
             } catch (error) {
                 console.error("Failed to fetch entry", error)
@@ -40,7 +42,7 @@ export function DiaryEditor({ date }: { date: string }) {
         try {
             const res = await fetch("/api/diary", {
                 method: "POST",
-                body: JSON.stringify({ date, content }),
+                body: JSON.stringify({ date, content, rating }),
                 headers: { "Content-Type": "application/json" },
             })
             if (!res.ok) {
@@ -63,6 +65,33 @@ export function DiaryEditor({ date }: { date: string }) {
                 <Button variant="ghost" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back
                 </Button>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm border-r pr-2 mr-2 text-muted-foreground">Rate your day:</span>
+                    <Button
+                        size="sm"
+                        variant={rating === "GOOD" ? "default" : "outline"}
+                        onClick={() => setRating("GOOD")}
+                        className={rating === "GOOD" ? "bg-green-600 hover:bg-green-700 text-white" : "hover:bg-green-100 text-green-600 border-green-200"}
+                    >
+                        Good
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant={rating === "MID" ? "default" : "outline"}
+                        onClick={() => setRating("MID")}
+                        className={rating === "MID" ? "bg-yellow-500 hover:bg-yellow-600 text-black" : "hover:bg-yellow-100 text-yellow-600 border-yellow-200"}
+                    >
+                        Mid
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant={rating === "BAD" ? "default" : "outline"}
+                        onClick={() => setRating("BAD")}
+                        className={rating === "BAD" ? "bg-red-600 hover:bg-red-700 text-white" : "hover:bg-red-100 text-red-600 border-red-200"}
+                    >
+                        Bad
+                    </Button>
+                </div>
                 <div className="flex items-center gap-4">
                     {error && <p className="text-sm text-red-500">{error}</p>}
                     <Button onClick={handleSave} disabled={isSaving}>

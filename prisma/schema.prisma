@@ -67,8 +67,9 @@ model VerificationToken {
 
 model DiaryEntry {
   id        String   @id @default(cuid())
-  date      DateTime @unique // One entry per date per user? Ideally unique per user+date
+  date      DateTime
   content   String
+  rating    String?  // GOOD, MID, BAD
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())

@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json()
-        const { date, content } = body
+        const { date, content, rating } = body
 
         // Parse date string to Date object (start of day)
         const entryDate = new Date(date)
@@ -25,11 +25,13 @@ export async function POST(req: Request) {
             },
             update: {
                 content,
+                rating,
             },
             create: {
                 userId: session.user.id,
                 date: entryDate,
                 content,
+                rating,
             },
         })
 
@@ -59,10 +61,13 @@ export async function GET(req: Request) {
                         not: ""
                     }
                 },
-                select: { date: true }
+                select: { date: true, rating: true }
             })
-            // Return YYYY-MM-DD strings (assuming dates are stored as UTC midnight)
-            return NextResponse.json(entries.map(e => e.date.toISOString().split('T')[0]))
+            // Return objects with date and rating
+            return NextResponse.json(entries.map(e => ({
+                date: e.date.toISOString().split('T')[0],
+                rating: e.rating
+            })))
         }
 
         const entryDate = new Date(dateString)
