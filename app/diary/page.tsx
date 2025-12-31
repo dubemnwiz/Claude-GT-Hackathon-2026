@@ -68,14 +68,14 @@ export default function DiaryPage() {
                                     const tileDate = format(date, 'yyyy-MM-dd');
                                     if (Object.keys(filledDates).includes(tileDate)) {
                                         const rating = filledDates[tileDate];
-                                        let colorClass = 'bg-blue-100/80 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300';
+                                        let colorClass = '!bg-blue-100/80 dark:!bg-blue-900/50 !border-blue-200 dark:!border-blue-800 !text-blue-700 dark:!text-blue-300';
 
                                         if (rating === "GOOD") {
-                                            colorClass = 'bg-green-200 dark:bg-green-900/50 border-green-300 dark:border-green-800 text-green-800 dark:text-green-300';
+                                            colorClass = '!bg-green-200 dark:!bg-green-900/50 !border-green-300 dark:!border-green-800 !text-green-800 dark:!text-green-300';
                                         } else if (rating === "MID") {
-                                            colorClass = 'bg-yellow-100 dark:bg-yellow-900/50 border-yellow-300 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300';
+                                            colorClass = '!bg-yellow-100 dark:!bg-yellow-900/50 !border-yellow-300 dark:!border-yellow-800 !text-yellow-800 dark:!text-yellow-300';
                                         } else if (rating === "BAD") {
-                                            colorClass = 'bg-red-200 dark:bg-red-900/50 border-red-300 dark:border-red-800 text-red-800 dark:text-red-300';
+                                            colorClass = '!bg-red-200 dark:!bg-red-900/50 !border-red-300 dark:!border-red-800 !text-red-800 dark:!text-red-300';
                                         }
 
                                         return `font-extrabold rounded-lg shadow-sm border ${colorClass}`;
