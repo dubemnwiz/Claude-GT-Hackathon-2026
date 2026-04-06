@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
@@ -13,8 +13,23 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Personal OS",
-  description: "A one-stop shop for work and personal tracking",
+  title: "Meridian",
+  description: "Your personal life OS — journal, fitness, planning, and more.",
+  appleWebApp: {
+    capable: true,
+    title: "Meridian",
+    statusBarStyle: "black-translucent",
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)",  color: "#0b0f1a" },
+    { media: "(prefers-color-scheme: light)", color: "#7c3aed" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

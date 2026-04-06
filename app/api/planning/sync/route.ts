@@ -3,70 +3,93 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { google } from "googleapis"
 import { prisma } from "@/lib/prisma"
-import { addDays, startOfWeek, getDay } from "date-fns"
+import { getGoogleOAuthClient } from "@/lib/google"
+import { addDays, startOfWeek } from "date-fns"
+
+const DAYS_MAP: Record<string, number> = {
+    Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3,
+    Friday: 4, Saturday: 5, Sunday: 6,
+}
+
+function taskDateString(day: string, weekOf?: string | null): string {
+    let monday: Date
+    if (weekOf) {
+        monday = new Date(weekOf + "T00:00:00")
+    } else {
+        monday = startOfWeek(new Date(), { weekStartsOn: 1 })
+    }
+    const offset = DAYS_MAP[day] ?? 0
+    const date = addDays(monday, offset)
+    return date.toISOString().split("T")[0] // YYYY-MM-DD
+}
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-    // @ts-ignore
-    if (!session || !session.accessToken) {
-        return NextResponse.json({ error: "Not authenticated with Google" }, { status: 401 })
+    const auth = await getGoogleOAuthClient(session.user.id)
+    if (!auth) {
+        // User hasn't connected Google — silently no-op
+        return NextResponse.json({ skipped: true })
     }
 
     try {
-        const { taskId, day, content } = await req.json()
+        const { taskId, day, content, weekOf } = await req.json()
 
-        // 1. Calculate the date for the task
-        // Logic: specific day of *this* week (Monday-based start)
-        // Note: date-fns startOfWeek defaults to Sunday (0) unless specified
-        const now = new Date()
-        const startOfCurrentWeek = startOfWeek(now, { weekStartsOn: 1 }) // Monday
+        // Look up existing task to check for a prior GCal event
+        const task = await prisma.task.findUnique({
+            where: { id: taskId, userId: session.user.id },
+            select: { gcalEventId: true },
+        })
 
-        const daysMap: Record<string, number> = {
-            "Monday": 0,
-            "Tuesday": 1,
-            "Wednesday": 2,
-            "Thursday": 3,
-            "Friday": 4,
-            "Saturday": 5,
-            "Sunday": 6
-        }
+        const dateString = taskDateString(day, weekOf)
+        const calendar = google.calendar({ version: "v3", auth })
 
-        const dayOffset = daysMap[day]
-        if (dayOffset === undefined) {
-            return NextResponse.json({ message: "Invalid day, skipping sync" })
-        }
-
-        const taskDate = addDays(startOfCurrentWeek, dayOffset)
-        const dateString = taskDate.toISOString().split('T')[0] // YYYY-MM-DD
-
-        // 2. Add to Google Calendar
-        // @ts-ignore
-        const oauth2Client = new google.auth.OAuth2()
-        // @ts-ignore
-        oauth2Client.setCredentials({ access_token: session.accessToken })
-        const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
-
-        const event = {
+        const eventBody = {
             summary: content,
-            description: `Task from Weekly Planner (ID: ${taskId})`,
+            description: `Synced from Meridian · Task ID: ${taskId}`,
             start: { date: dateString },
-            end: { date: dateString },
+            end:   { date: dateString },
         }
 
-        const res = await calendar.events.insert({
-            calendarId: 'primary',
-            requestBody: event,
-        })
+        let eventId: string | null | undefined = task?.gcalEventId
 
-        return NextResponse.json({
-            success: true,
-            eventId: res.data.id,
-            syncedDate: dateString
-        })
+        if (eventId) {
+            // Update existing event
+            try {
+                await calendar.events.update({
+                    calendarId: "primary",
+                    eventId,
+                    requestBody: eventBody,
+                })
+            } catch {
+                // Event was deleted from GCal — create a fresh one
+                eventId = null
+            }
+        }
 
+        if (!eventId) {
+            // Create new event
+            const res = await calendar.events.insert({
+                calendarId: "primary",
+                requestBody: eventBody,
+            })
+            eventId = res.data.id
+
+            // Persist the event ID back to the task
+            if (eventId) {
+                await prisma.task.update({
+                    where: { id: taskId },
+                    data: { gcalEventId: eventId },
+                })
+            }
+        }
+
+        return NextResponse.json({ success: true, eventId, syncedDate: dateString })
     } catch (error) {
-        console.error("Calendar Sync Error:", error)
-        return NextResponse.json({ error: "Failed to sync" }, { status: 500 })
+        console.error("Calendar sync error:", error)
+        return NextResponse.json({ error: "Sync failed" }, { status: 500 })
     }
 }

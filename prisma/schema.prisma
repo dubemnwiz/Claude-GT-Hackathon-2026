@@ -111,17 +111,18 @@ model NoteBlock {
 }
 
 model Task {
-  id        String   @id @default(cuid())
-  content   String
-  notes     String?
-  status    String   @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, COMPLETED
-  day       String   @default("Monday") // Monday, Tuesday, etc.
-  priority  String   @default("MEDIUM") // HIGH, MEDIUM, LOW
-  weekOf    String?  // YYYY-MM-DD of the Monday of the week this task belongs to
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  content     String
+  notes       String?
+  status      String   @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, COMPLETED
+  day         String   @default("Monday") // Monday, Tuesday, etc.
+  priority    String   @default("MEDIUM") // HIGH, MEDIUM, LOW
+  weekOf      String?  // YYYY-MM-DD of the Monday of the week this task belongs to
+  gcalEventId String?  // Google Calendar event ID for two-way sync
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model WorkoutLog {

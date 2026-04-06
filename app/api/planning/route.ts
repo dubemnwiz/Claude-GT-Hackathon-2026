@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { google } from "googleapis"
+import { getGoogleOAuthClient } from "@/lib/google"
 
 function getMondayKey(date: Date): string {
     const dayOfWeek = date.getDay()
@@ -114,6 +116,21 @@ export async function DELETE(req: Request) {
                 },
             })
         } else if (id) {
+            // Delete the linked GCal event first (if any)
+            const task = await prisma.task.findUnique({
+                where: { id, userId: session.user.id },
+                select: { gcalEventId: true },
+            })
+            if (task?.gcalEventId) {
+                const auth = await getGoogleOAuthClient(session.user.id)
+                if (auth) {
+                    const calendar = google.calendar({ version: "v3", auth })
+                    await calendar.events.delete({
+                        calendarId: "primary",
+                        eventId: task.gcalEventId,
+                    }).catch(() => { /* event may already be gone */ })
+                }
+            }
             await prisma.task.delete({
                 where: { id, userId: session.user.id },
             })

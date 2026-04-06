@@ -2,22 +2,24 @@
 
 import { useDroppable } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { Task } from "./KanbanBoard"
+import { Task, GCalEvent } from "./KanbanBoard"
 import { KanbanCard } from "./KanbanCard"
 import { cn } from "@/lib/utils"
+import { CalendarDays } from "lucide-react"
 
 interface KanbanColumnProps {
     day: string
     dateLabel?: string
     isToday?: boolean
     tasks: Task[]
+    events?: GCalEvent[]
     onDelete: (id: string) => void
     onStatusChange: (id: string, status: string) => void
     onPriorityChange: (id: string, priority: string) => void
     onNotesChange: (id: string, notes: string) => void
 }
 
-export function KanbanColumn({ day, dateLabel, isToday, tasks, onDelete, onStatusChange, onPriorityChange, onNotesChange }: KanbanColumnProps) {
+export function KanbanColumn({ day, dateLabel, isToday, tasks, events = [], onDelete, onStatusChange, onPriorityChange, onNotesChange }: KanbanColumnProps) {
     const { setNodeRef } = useDroppable({ id: day })
 
     return (
@@ -51,9 +53,33 @@ export function KanbanColumn({ day, dateLabel, isToday, tasks, onDelete, onStatu
                     )}
                     <span className="text-[10px] text-muted-foreground/70 ml-auto">
                         {tasks.length > 0 ? `${tasks.length} task${tasks.length === 1 ? '' : 's'}` : ''}
+                        {events.length > 0 && (
+                            <span className="ml-1 text-sky-400/60">{events.length} event{events.length === 1 ? '' : 's'}</span>
+                        )}
                     </span>
                 </div>
             </div>
+
+            {/* GCal events (read-only) */}
+            {events.length > 0 && (
+                <div className="space-y-1 mb-2 pb-2 border-b border-sky-500/15">
+                    {events.map(event => (
+                        <div
+                            key={event.id}
+                            title={event.title}
+                            className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-sky-500/8 border border-sky-500/15"
+                        >
+                            <CalendarDays className="h-3 w-3 text-sky-400 shrink-0" />
+                            <span className="text-[11px] text-sky-300 truncate flex-1 leading-none">
+                                {event.title}
+                            </span>
+                            {event.timeLabel && (
+                                <span className="text-[10px] text-sky-400/50 shrink-0">{event.timeLabel}</span>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {/* Droppable task area */}
             <div

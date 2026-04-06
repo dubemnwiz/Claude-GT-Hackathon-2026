@@ -6,13 +6,24 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, FileDown, Eraser, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react"
+import { Plus, FileDown, Eraser, ChevronLeft, ChevronRight, ChevronsRight, CalendarDays } from "lucide-react"
 import { TaskItem } from "./TaskItem"
 import { KanbanCard } from "./KanbanCard"
 import { KanbanColumn } from "./KanbanColumn"
 import { jsPDF } from "jspdf"
 import html2canvas from "html2canvas"
 import { cn } from "@/lib/utils"
+import { signIn } from "next-auth/react"
+
+export interface GCalEvent {
+    id: string
+    title: string
+    day: string
+    start: string | null
+    end: string | null
+    isAllDay: boolean
+    timeLabel: string | null
+}
 
 export interface Task {
     id: string
@@ -98,6 +109,8 @@ export function KanbanBoard() {
     const [selectedPriority, setSelectedPriority] = useState<Priority>('MEDIUM')
     const [currentWeekMonday, setCurrentWeekMonday] = useState<Date>(getThisWeekMonday)
     const [error, setError] = useState("")
+    const [gcalEvents, setGcalEvents] = useState<GCalEvent[]>([])
+    const [gcalConnected, setGcalConnected] = useState<boolean | null>(null)
     const [isExporting, setIsExporting] = useState(false)
     const [activeId, setActiveId] = useState<string | null>(null)
 
@@ -132,6 +145,18 @@ export function KanbanBoard() {
         fetchTasks()
     }, [currentWeekMonday]) // eslint-disable-line react-hooks/exhaustive-deps
 
+    // Fetch Google Calendar events for the current week
+    useEffect(() => {
+        const weekOf = formatWeekOfKey(currentWeekMonday)
+        fetch(`/api/planning/gcal?weekOf=${weekOf}`)
+            .then(r => r.json())
+            .then(data => {
+                setGcalConnected(data.connected ?? false)
+                setGcalEvents(data.events ?? [])
+            })
+            .catch(() => setGcalConnected(false))
+    }, [currentWeekMonday])
+
     const addTask = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!newTask) return
@@ -148,12 +173,13 @@ export function KanbanBoard() {
                 setNewTask("")
                 fetchTasks()
 
-                // Sync to Google Calendar (Fire and forget)
+                // Sync to Google Calendar (fire and forget)
+                const weekOf = formatWeekOfKey(currentWeekMonday)
                 fetch("/api/planning/sync", {
                     method: "POST",
-                    body: JSON.stringify({ taskId: createdTask.id, day: selectedDay, content: newTask }),
+                    body: JSON.stringify({ taskId: createdTask.id, day: selectedDay, content: newTask, weekOf }),
                     headers: { "Content-Type": "application/json" }
-                }).catch(e => console.error("Sync failed", e))
+                }).catch(() => {})
             } else {
                 if (res.status === 401) setError("Please login to add tasks")
                 else setError("Failed to add task")
@@ -180,9 +206,9 @@ export function KanbanBoard() {
 
             fetch("/api/planning/sync", {
                 method: "POST",
-                body: JSON.stringify({ taskId: id, day, content: taskContent }),
+                body: JSON.stringify({ taskId: id, day, content: taskContent, weekOf }),
                 headers: { "Content-Type": "application/json" }
-            }).catch(e => console.error("Sync failed", e))
+            }).catch(() => {})
         } catch (error) {
             console.error("Failed to update task day", error)
             setTasks(previousTasks)
@@ -430,6 +456,22 @@ export function KanbanBoard() {
                 </div>
 
                 {error && <p className="text-sm text-red-500">{error}</p>}
+
+                {/* Google Calendar connection banner */}
+                {gcalConnected === false && (
+                    <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-sky-500/5 border border-sky-500/20 text-sm">
+                        <CalendarDays className="h-4 w-4 text-sky-400 shrink-0" />
+                        <span className="text-muted-foreground text-xs flex-1">
+                            Connect Google Calendar to sync tasks and see your events here.
+                        </span>
+                        <button
+                            onClick={() => signIn("google", { callbackUrl: "/planning" })}
+                            className="text-xs text-sky-400 font-semibold hover:text-sky-300 transition-colors whitespace-nowrap"
+                        >
+                            Connect →
+                        </button>
+                    </div>
+                )}
             </div>
 
             <DndContext
@@ -451,6 +493,7 @@ export function KanbanBoard() {
                                     dateLabel={weekDates[day]}
                                     isToday={isToday}
                                     tasks={dayTasks}
+                                    events={gcalEvents.filter(e => e.day === day)}
                                     onDelete={deleteTask}
                                     onStatusChange={updateTaskStatus}
                                     onPriorityChange={updateTaskPriority}
@@ -481,7 +524,18 @@ export function KanbanBoard() {
                                         <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">Today</span>
                                     )}
                                 </div>
-                                {dayTasks.length === 0 && (
+                                {/* GCal events for this day (mobile) */}
+                                {gcalEvents.filter(e => e.day === day).map(event => (
+                                    <div key={event.id} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-sky-500/8 border border-sky-500/20">
+                                        <CalendarDays className="h-3.5 w-3.5 text-sky-400 shrink-0" />
+                                        <span className="text-xs text-sky-300 flex-1 truncate">{event.title}</span>
+                                        {event.timeLabel && (
+                                            <span className="text-[10px] text-sky-400/60 shrink-0">{event.timeLabel}</span>
+                                        )}
+                                    </div>
+                                ))}
+
+                                {dayTasks.length === 0 && gcalEvents.filter(e => e.day === day).length === 0 && (
                                     <p className="text-xs text-muted-foreground italic pl-2">No tasks</p>
                                 )}
                                 {dayTasks.map(task => (
