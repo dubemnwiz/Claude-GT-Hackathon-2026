@@ -223,6 +223,7 @@ export default function DiaryPage() {
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
                                     placeholder="Search entries..."
+                                    inputMode="search"
                                     className="pl-9 h-9 bg-card/50 border-border/30 text-sm"
                                 />
                             </div>

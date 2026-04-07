@@ -131,6 +131,9 @@ model WorkoutLog {
   date      DateTime
   workout   String
   isPR      Boolean  @default(false)
+  exercises Json?    // Array<{name:string, sets:[{weight:number, reps:number, isPR:boolean}]}>
+  duration  Int?     // Minutes (cardio workouts)
+  notes     String?  // Free-text notes (cardio pace, distance, etc.)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -146,15 +149,20 @@ model Countdown {
 }
 
 model MediaItem {
-  id        String   @id @default(cuid())
-  title     String
-  type      String   // BOOK, MOVIE, TV_SHOW
-  status    String   @default("WANT_TO") // WANT_TO, IN_PROGRESS, DONE
-  rating    Int?     // 1-5
-  notes     String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  title      String
+  type       String   // BOOK, MOVIE, TV_SHOW
+  status     String   @default("WANT_TO") // WANT_TO, IN_PROGRESS, DONE
+  rating     Int?     // 1-5
+  notes      String?
+  posterUrl  String?  // TMDB poster or Google Books thumbnail
+  externalId String?  // TMDB ID or Google Books volume ID
+  year       Int?     // Release / publication year
+  author     String?  // Book author(s) or movie director
+  rank       Float?   // Fractional rank within DONE items (lower = better)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 

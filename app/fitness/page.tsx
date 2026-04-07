@@ -1,11 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { WeightTracker } from "@/components/fitness/WeightTracker"
 import { WorkoutTracker } from "@/components/fitness/WorkoutTracker"
 import { Card, CardContent } from "@/components/ui/card"
-import { Scale, Dumbbell, TrendingDown, CalendarCheck } from "lucide-react"
+import { Scale, Dumbbell, Trophy, CalendarCheck, Sparkles, X, ChevronRight } from "lucide-react"
 import { format, startOfWeek } from "date-fns"
+import { FitnessAnalytics } from "@/components/fitness/FitnessAnalytics"
+import { PRBoard } from "@/components/fitness/PRBoard"
+import { AnimatePresence, motion } from "framer-motion"
 
 interface WeightLog {
     id: string
@@ -14,25 +18,45 @@ interface WeightLog {
     fullDate: string
 }
 
+interface SetData {
+    weight: number
+    reps: number
+    isPR: boolean
+}
+
+interface ExerciseData {
+    name: string
+    sets: SetData[]
+}
+
 interface WorkoutLog {
     id: string
     workout: string
     date: string
+    isPR: boolean
+    duration?: number | null
+    notes?: string | null
+    exercises?: ExerciseData[] | null
 }
 
-const TABS = ["Weight", "Workouts"] as const
+const TABS = ["Weight", "Workouts", "PRs"] as const
 type Tab = (typeof TABS)[number]
 
-export default function FitnessPage() {
-    const [activeTab, setActiveTab] = useState<Tab>("Weight")
+function FitnessPageInner() {
+    const searchParams = useSearchParams()
+    const tabParam = searchParams.get("tab") as Tab | null
+    const initialTab: Tab = tabParam && (TABS as readonly string[]).includes(tabParam) ? tabParam : "Weight"
+    const [activeTab, setActiveTab] = useState<Tab>(initialTab)
     const [weightData, setWeightData] = useState<WeightLog[]>([])
     const [workoutData, setWorkoutData] = useState<WorkoutLog[]>([])
+    const [showAnalytics, setShowAnalytics] = useState(false)
 
     const latestWeight = weightData.length ? weightData[weightData.length - 1].weight : null
     const prevWeight = weightData.length > 1 ? weightData[weightData.length - 2].weight : null
     const weightDelta = latestWeight != null && prevWeight != null ? latestWeight - prevWeight : null
 
     const totalWorkouts = workoutData.length
+    const totalPRs = workoutData.filter(l => l.isPR).length
 
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
     const loggedDates = workoutData.map(l => format(new Date(l.date), 'yyyy-MM-dd'))
@@ -53,11 +77,11 @@ export default function FitnessPage() {
             subColor: weightDelta != null ? (weightDelta < 0 ? "text-emerald-500" : weightDelta > 0 ? "text-rose-500" : "text-muted-foreground") : "text-muted-foreground",
         },
         {
-            icon: TrendingDown,
-            label: "Weight Change",
-            value: weightDelta != null ? `${weightDelta > 0 ? "+" : ""}${weightDelta.toFixed(1)} lbs` : "—",
-            sub: "Since last log",
-            subColor: "text-muted-foreground",
+            icon: Trophy,
+            label: "PRs Logged",
+            value: totalPRs > 0 ? `${totalPRs}` : "—",
+            sub: "All time",
+            subColor: totalPRs > 0 ? "text-amber-500" : "text-muted-foreground",
         },
         {
             icon: Dumbbell,
@@ -76,11 +100,20 @@ export default function FitnessPage() {
     ]
 
     return (
-        <div className="space-y-5 md:space-y-8">
+        <div className="space-y-5 md:space-y-8 relative pb-20">
             {/* Header */}
-            <div>
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Fitness Tracker</h1>
-                <p className="text-muted-foreground">Track your weight and workouts over time.</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Fitness Tracker</h1>
+                    <p className="text-muted-foreground">Track your weight and workouts over time.</p>
+                </div>
+                <button
+                    onClick={() => setShowAnalytics(true)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground shadow-lg hover:brightness-110 transition-all font-semibold text-sm"
+                >
+                    <Sparkles className="h-4 w-4" />
+                    <span>Insights</span>
+                </button>
             </div>
 
             {/* Stats bar */}
@@ -127,9 +160,64 @@ export default function FitnessPage() {
                         {activeTab === "Workouts" && (
                             <WorkoutTracker onDataChange={setWorkoutData} />
                         )}
+                        {activeTab === "PRs" && (
+                            <PRBoard logs={workoutData} />
+                        )}
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Analytics Drawer Overlay */}
+            <AnimatePresence>
+                {showAnalytics && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowAnalytics(false)}
+                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
+                        />
+                        <motion.div
+                            initial={{ x: "100%" }}
+                            animate={{ x: 0 }}
+                            exit={{ x: "100%" }}
+                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                            className="fixed top-0 right-0 bottom-0 w-full max-w-xl bg-background border-l border-border/40 shadow-2xl z-[70] overflow-y-auto"
+                        >
+                            <div className="p-6 sticky top-0 bg-background/80 backdrop-blur-md z-10 flex items-center justify-between border-b border-border/10">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 rounded-xl bg-primary/10">
+                                        <Sparkles className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold">Fitness Insights</h2>
+                                        <p className="text-xs text-muted-foreground">Detailed analytics & muscle map</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowAnalytics(false)}
+                                    className="p-2 rounded-lg hover:bg-muted transition-colors"
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                            </div>
+
+                            <div className="px-6 pb-safe">
+                                <FitnessAnalytics logs={workoutData} />
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
+    )
+}
+
+export default function FitnessPage() {
+    return (
+        <Suspense fallback={null}>
+            <FitnessPageInner />
+        </Suspense>
     )
 }

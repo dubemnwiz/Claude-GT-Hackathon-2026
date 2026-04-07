@@ -30,6 +30,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -49,7 +51,13 @@ export default function RootLayout({
           <NextAuthProvider>
             <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 relative">
               <ParticleBackground />
-              <main className="px-4 md:px-6 max-w-7xl mx-auto min-h-screen pb-28 pt-8">
+              <main
+                className="px-4 md:px-6 max-w-7xl mx-auto min-h-screen"
+                style={{
+                  paddingTop: "max(2rem, env(safe-area-inset-top, 0px))",
+                  paddingBottom: "max(7rem, calc(5rem + env(safe-area-inset-bottom, 0px)))",
+                }}
+              >
                 {children}
               </main>
               <Navbar />

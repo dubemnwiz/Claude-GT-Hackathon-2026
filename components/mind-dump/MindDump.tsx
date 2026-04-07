@@ -108,7 +108,7 @@ function TextCard({ note, onDelete, isEditing, editingText, onStartEdit, onEditC
             {!isEditing && (
                 <button
                     onClick={onDelete}
-                    className="absolute top-2 right-2 p-1 rounded opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
+                    className="absolute top-2 right-2 p-2 rounded text-muted-foreground hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100 transition-all"
                 >
                     <X className="h-3.5 w-3.5" />
                 </button>
@@ -154,7 +154,7 @@ function LinkCard({ note, onDelete }: { note: ParsedNote; onDelete: () => void }
         <div className="group relative p-4 rounded-xl bg-card/60 border border-border/40 hover:border-border/70 backdrop-blur-sm transition-all">
             <button
                 onClick={onDelete}
-                className="absolute top-2 right-2 p-1 rounded opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
+                className="absolute top-2 right-2 p-2 rounded text-muted-foreground hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100 transition-all"
             >
                 <X className="h-3.5 w-3.5" />
             </button>
@@ -190,7 +190,7 @@ function YoutubeCard({ note, onDelete }: { note: ParsedNote; onDelete: () => voi
         <div className="group relative rounded-xl bg-card/60 border border-border/40 hover:border-border/70 backdrop-blur-sm transition-all overflow-hidden">
             <button
                 onClick={onDelete}
-                className="absolute top-2 right-2 z-10 p-1 rounded opacity-0 group-hover:opacity-100 bg-black/60 text-white hover:bg-black/80 transition-all"
+                className="absolute top-2 right-2 z-10 p-2 rounded bg-black/60 text-white hover:bg-black/80 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
             >
                 <X className="h-3.5 w-3.5" />
             </button>
@@ -404,9 +404,9 @@ export function MindDump() {
                             onClick={handleSubmit}
                             disabled={!input.trim() || submitting}
                             size="sm"
-                            className="h-7 px-4 text-xs"
+                            className="h-8 px-4 text-xs"
                         >
-                            {submitting ? "Saving..." : "Add  ⌘↵"}
+                            {submitting ? "Saving…" : <><span className="sm:hidden">Add</span><span className="hidden sm:inline">Add ⌘↵</span></>}
                         </Button>
                     </div>
                 </div>

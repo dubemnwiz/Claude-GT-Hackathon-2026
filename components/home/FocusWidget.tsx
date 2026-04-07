@@ -60,8 +60,13 @@ export function FocusWidget({ initialTasks, today: serverToday }: FocusWidgetPro
                     setTasks(taskList)
                 }
 
-                // 2. Fetch Calendar Events
-                const eventRes = await fetch("/api/calendar/today")
+                // 2. Fetch Calendar Events with local day boundaries
+                const s = new Date(localDate)
+                s.setHours(0,0,0,0)
+                const e = new Date(localDate)
+                e.setHours(23,59,59,999)
+                
+                const eventRes = await fetch(`/api/calendar/today?timeMin=${s.toISOString()}&timeMax=${e.toISOString()}`)
                 if (eventRes.ok) {
                     const data = await eventRes.json()
                     setEvents(data.events || [])
@@ -197,9 +202,9 @@ export function FocusWidget({ initialTasks, today: serverToday }: FocusWidgetPro
                                         <div className="p-2 bg-blue-500/20 rounded-full text-blue-600 dark:text-blue-400">
                                             <Clock className="w-4 h-4" />
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">{event.summary || "(No Title)"}</span>
-                                            <span className="text-xs text-blue-600 dark:text-blue-300/80">{timeString}</span>
+                                        <div className="flex flex-col min-w-0 flex-1">
+                                            <span className="text-sm font-semibold text-foreground truncate">{event.summary || "(No Title)"}</span>
+                                            <span className="text-xs text-blue-600/80 dark:text-blue-300/60 font-medium">{timeString}</span>
                                         </div>
                                     </div>
                                 )

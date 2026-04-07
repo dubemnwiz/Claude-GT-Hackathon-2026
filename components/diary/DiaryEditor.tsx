@@ -179,7 +179,9 @@ export function DiaryEditor({ date }: { date: string }) {
                         setContent(e.target.value)
                         setSaveStatus("idle")
                     }}
-                    autoFocus
+                    // Only auto-focus on desktop — on iOS it immediately pops the keyboard
+                    // which collapses the toolbar before the user can rate their day
+                    autoFocus={typeof window !== "undefined" && window.innerWidth >= 640}
                 />
             </div>
 

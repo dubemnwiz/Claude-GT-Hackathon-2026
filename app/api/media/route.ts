@@ -18,17 +18,33 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions)
     if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
-    const { title, type, status, rating, notes } = await req.json()
+    const { title, type, status, rating, notes, posterUrl, externalId, year, author } = await req.json()
     if (!title || !type) return new NextResponse("Missing fields", { status: 400 })
+
+    // Auto-assign rank if created directly as DONE
+    let rank: number | null = null
+    if (status === "DONE") {
+        const maxRankItem = await prisma.mediaItem.findFirst({
+            where: { userId: session.user.id, status: "DONE", type, rank: { not: null } },
+            orderBy: { rank: "desc" },
+            select: { rank: true },
+        })
+        rank = (maxRankItem?.rank ?? 0) + 1000
+    }
 
     const item = await prisma.mediaItem.create({
         data: {
             title,
             type,
-            status: status ?? "WANT_TO",
-            rating: rating ?? null,
-            notes: notes ?? null,
-            userId: session.user.id,
+            status:     status     ?? "WANT_TO",
+            rating:     rating     ?? null,
+            notes:      notes      ?? null,
+            posterUrl:  posterUrl  ?? null,
+            externalId: externalId ?? null,
+            year:       year       ?? null,
+            author:     author     ?? null,
+            rank,
+            userId:     session.user.id,
         },
     })
     return NextResponse.json(item)
@@ -41,11 +57,32 @@ export async function PATCH(req: Request) {
     const { id, ...updates } = await req.json()
     if (!id) return new NextResponse("Missing id", { status: 400 })
 
-    const item = await prisma.mediaItem.updateMany({
+    // Auto-assign rank when status changes to DONE for the first time
+    if (updates.status === "DONE") {
+        const current = await prisma.mediaItem.findFirst({
+            where: { id, userId: session.user.id },
+            select: { rank: true, type: true },
+        })
+        if (current && current.rank === null) {
+            const maxRankItem = await prisma.mediaItem.findFirst({
+                where: { userId: session.user.id, status: "DONE", type: current.type, rank: { not: null } },
+                orderBy: { rank: "desc" },
+                select: { rank: true },
+            })
+            updates.rank = (maxRankItem?.rank ?? 0) + 1000
+        }
+    }
+
+    await prisma.mediaItem.updateMany({
         where: { id, userId: session.user.id },
         data: updates,
     })
-    return NextResponse.json(item)
+
+    // Return the updated record so callers can sync auto-assigned fields (e.g. rank)
+    const updated = await prisma.mediaItem.findFirst({
+        where: { id, userId: session.user.id },
+    })
+    return NextResponse.json(updated)
 }
 
 export async function DELETE(req: Request) {

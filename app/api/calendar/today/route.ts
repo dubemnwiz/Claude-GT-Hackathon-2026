@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { google } from "googleapis"
 import { getGoogleOAuthClient } from "@/lib/google"
 
-export async function GET() {
+export async function GET(req: Request) {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
         return NextResponse.json({ events: [] })
@@ -16,9 +16,13 @@ export async function GET() {
     }
 
     try {
+        const { searchParams } = new URL(req.url)
+        const timeMinParam = searchParams.get("timeMin")
+        const timeMaxParam = searchParams.get("timeMax")
+
         const now = new Date()
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).toISOString()
-        const endOfDay   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString()
+        const startOfDay = timeMinParam || new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).toISOString()
+        const endOfDay   = timeMaxParam || new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString()
 
         const calendar = google.calendar({ version: "v3", auth })
         const response = await calendar.events.list({

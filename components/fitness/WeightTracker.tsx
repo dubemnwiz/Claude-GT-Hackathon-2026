@@ -221,7 +221,14 @@ export function WeightTracker({ onDataChange }: WeightTrackerProps) {
                             <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
                             <YAxis domain={['auto', 'auto']} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
                             <Tooltip
-                                contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '10px', border: '1px solid hsl(var(--border))', fontSize: '13px' }}
+                                contentStyle={{
+                                    backgroundColor: 'hsl(var(--card))',
+                                    borderRadius: '10px',
+                                    border: '1px solid hsl(var(--border))',
+                                    fontSize: '13px',
+                                    color: 'hsl(var(--card-foreground))'
+                                }}
+                                itemStyle={{ color: 'hsl(var(--card-foreground))' }}
                                 formatter={(val: any) => [`${val} lbs`, 'Weight']}
                             />
                             {goalWeight && (
@@ -251,7 +258,7 @@ export function WeightTracker({ onDataChange }: WeightTrackerProps) {
             <form onSubmit={handleSubmit} className="flex gap-3 items-end">
                 <div className="flex-1">
                     <label htmlFor="weight" className="text-xs text-muted-foreground mb-1.5 block">Log weight (lbs)</label>
-                    <Input id="weight" type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="e.g. 175.5" className="h-9" />
+                    <Input id="weight" type="number" step="0.1" inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="e.g. 175.5" className="h-9" />
                 </div>
                 <Button type="submit" size="sm" className="h-9 px-5">Add</Button>
             </form>
@@ -259,7 +266,7 @@ export function WeightTracker({ onDataChange }: WeightTrackerProps) {
 
             {/* Log list */}
             {data.length > 0 && (
-                <div className="space-y-1.5 max-h-[180px] overflow-y-auto pr-1">
+                <div className="space-y-1.5 max-h-[180px] scroll-contained pr-1">
                     <AnimatePresence>
                         {data.slice().reverse().map((log) => (
                             <motion.div key={log.id} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}

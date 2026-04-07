@@ -11,16 +11,36 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json()
-        const { workout, date, isPR } = body
+        const { workout, date, isPR, exercises, duration, notes } = body
 
-        const log = await prisma.workoutLog.create({
-            data: {
-                userId: session.user.id,
-                workout,
-                date: new Date(date),
-                isPR: isPR ?? false,
-            },
-        })
+        // Build data object — only include duration/notes if they have values,
+        // so a DB without the new columns (pre-migration) still saves cleanly.
+        const baseData = {
+            userId: session.user.id,
+            workout,
+            date: new Date(date),
+            isPR: isPR ?? false,
+            exercises: exercises ?? undefined,
+        }
+
+        let log
+        try {
+            log = await prisma.workoutLog.create({
+                data: {
+                    ...baseData,
+                    ...(duration != null && { duration }),
+                    ...(notes != null && { notes }),
+                },
+            })
+        } catch (innerError: any) {
+            // If new columns don't exist in DB yet (schema migration pending),
+            // fall back to saving without them so the workout isn't lost.
+            if (String(innerError).includes("duration") || String(innerError).includes("notes") || String(innerError).includes("column")) {
+                log = await prisma.workoutLog.create({ data: baseData })
+            } else {
+                throw innerError
+            }
+        }
 
         return NextResponse.json(log)
     } catch (error) {
@@ -42,7 +62,7 @@ export async function GET(req: Request) {
             orderBy: {
                 date: 'desc',
             },
-            take: 30, // Last 30 entries
+            take: 100, // Last 100 entries (needed for ghost mode + day navigation)
         })
 
         return NextResponse.json(logs)
@@ -57,11 +77,17 @@ export async function PUT(req: Request) {
 
     try {
         const body = await req.json()
-        const { id, isPR } = body
+        const { id, isPR, exercises, duration, notes } = body
+
+        const updateData: Record<string, unknown> = {}
+        if (isPR !== undefined) updateData.isPR = isPR
+        if (exercises !== undefined) updateData.exercises = exercises
+        if (duration !== undefined) updateData.duration = duration
+        if (notes !== undefined) updateData.notes = notes
 
         const log = await prisma.workoutLog.update({
             where: { id, userId: session.user.id },
-            data: { isPR },
+            data: updateData,
         })
         return NextResponse.json(log)
     } catch (error) {

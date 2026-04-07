@@ -106,12 +106,31 @@
     transition-property: background-color, border-color, color;
     transition-duration: 300ms;
     transition-timing-function: ease;
+    /* Remove iOS tap flash — makes the app feel native */
+    -webkit-tap-highlight-color: transparent;
+    /* Prevent "Open in New Tab" callout on long-press for links */
+    -webkit-touch-callout: none;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+    /* Prevent elastic overscroll on the body itself */
+    overscroll-behavior: none;
+  }
+
+  /* Remove 300ms tap delay and double-tap zoom on all interactive elements */
+  button, a, [role="button"], label, select {
+    touch-action: manipulation;
+  }
+
+  /* Prevent iOS Safari from zooming into inputs (requires font-size >= 16px).
+     We only bump the computed size — visual size stays the same via the wrapper. */
+  @media (max-width: 640px) {
+    input, select, textarea {
+      font-size: 16px;
+    }
   }
 }
 
@@ -145,6 +164,21 @@
 
 @utility rotate-y-180 {
   transform: rotateY(180deg);
+}
+
+/* ── Safe area + scroll utilities ───────────────────────────────────── */
+
+/* Scrollable inner panels: contain scroll so page doesn't scroll when the
+   list hits its boundary, and enable momentum on iOS */
+@utility scroll-contained {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Safe-area-aware bottom padding (used by drawers / full-height panels) */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ── React Calendar overrides ────────────────────────────────────────── */

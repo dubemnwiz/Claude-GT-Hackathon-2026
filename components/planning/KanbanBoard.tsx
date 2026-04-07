@@ -511,7 +511,7 @@ export function KanbanBoard() {
                 </div>
 
                 {/* Mobile: Vertical accordion list */}
-                <div className="md:hidden space-y-6 overflow-y-auto pb-8">
+                <div className="md:hidden space-y-6 scroll-contained pb-8">
                     {DAYS.map(day => {
                         const dayTasks = tasks.filter(t => t.day === day)
                         const isToday = isCurrentWeek && day === todayDay

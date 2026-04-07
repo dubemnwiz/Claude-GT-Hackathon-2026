@@ -15,6 +15,7 @@ import { DailyQuote } from "@/components/home/DailyQuote"
 import { UnifiedActivityFeed, ActivityItem } from "@/components/home/UnifiedActivityFeed"
 import { WeeklyRecap, WeeklyRecapData } from "@/components/home/WeeklyRecap"
 import { CountdownWidget } from "@/components/home/CountdownWidget"
+import { GoogleCalendarWidget } from "@/components/home/GoogleCalendarWidget"
 
 const quickActions = [
   {
@@ -24,7 +25,7 @@ const quickActions = [
     gradient: "from-violet-500 to-indigo-500",
     glow: "group-hover:shadow-violet-500/30",
     bg: "bg-violet-500/10 group-hover:bg-violet-500",
-    text: "text-violet-400 group-hover:text-white",
+    text: "text-violet-600 dark:text-violet-400 group-hover:text-white",
   },
   {
     href: "/fitness",
@@ -33,7 +34,7 @@ const quickActions = [
     gradient: "from-pink-500 to-rose-500",
     glow: "group-hover:shadow-pink-500/30",
     bg: "bg-pink-500/10 group-hover:bg-pink-500",
-    text: "text-pink-400 group-hover:text-white",
+    text: "text-pink-600 dark:text-pink-400 group-hover:text-white",
   },
   {
     href: "/planning",
@@ -42,7 +43,7 @@ const quickActions = [
     gradient: "from-emerald-500 to-teal-500",
     glow: "group-hover:shadow-emerald-500/30",
     bg: "bg-emerald-500/10 group-hover:bg-emerald-500",
-    text: "text-emerald-400 group-hover:text-white",
+    text: "text-emerald-600 dark:text-emerald-400 group-hover:text-white",
   },
   {
     href: "/mind-dump",
@@ -51,7 +52,7 @@ const quickActions = [
     gradient: "from-amber-500 to-orange-500",
     glow: "group-hover:shadow-amber-500/30",
     bg: "bg-amber-500/10 group-hover:bg-amber-500",
-    text: "text-amber-400 group-hover:text-white",
+    text: "text-amber-600 dark:text-amber-400 group-hover:text-white",
   },
 ]
 
@@ -236,9 +237,10 @@ export default async function Home() {
           </Card>
         </div>
 
-        {/* Right column: Focus Widget + Countdowns */}
+        {/* Right column: Focus Widget + Calendar + Countdowns */}
         <div className="md:col-span-1 flex flex-col gap-5">
           <FocusWidget initialTasks={todaysTasks} today={today} />
+          <GoogleCalendarWidget />
           <CountdownWidget />
         </div>
       </div>
