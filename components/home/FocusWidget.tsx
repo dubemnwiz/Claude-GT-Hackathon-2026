@@ -204,7 +204,7 @@ export function FocusWidget({ initialTasks, today: serverToday }: FocusWidgetPro
                                         </div>
                                         <div className="flex flex-col min-w-0 flex-1">
                                             <span className="text-sm font-semibold text-foreground truncate">{event.summary || "(No Title)"}</span>
-                                            <span className="text-xs text-blue-600/80 dark:text-blue-300/60 font-medium">{timeString}</span>
+                                            <span className="text-xs text-blue-700/90 dark:text-blue-300/80 font-medium">{timeString}</span>
                                         </div>
                                     </div>
                                 )

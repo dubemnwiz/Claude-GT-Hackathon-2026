@@ -146,7 +146,7 @@ export function GoogleCalendarWidget() {
                                     <span className={cn("w-1 h-6 rounded-full shrink-0", accent)} />
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs font-semibold truncate text-foreground">{ev.summary ?? "Untitled event"}</p>
-                                        {time && <p className="text-[10px] text-muted-foreground font-medium">{time}</p>}
+                                        {time && <p className="text-[10px] text-foreground/70 dark:text-muted-foreground font-medium">{time}</p>}
                                     </div>
                                 </motion.div>
                             )
