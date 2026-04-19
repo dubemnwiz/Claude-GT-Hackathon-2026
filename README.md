@@ -1,6 +1,11 @@
 # Meridian
 
-This repo was built for a **nutrition-focused hackathon prompt**. The idea is a small personal hub that ties together eating well, staying accountable, and seeing your progress in one place—without pretending to be a full clinical product.
+This project was built for a Claude Builder Club @ GT's Spring Hackathon, . The idea is a small personal hub that ties together eating well, staying accountable, and seeing your progress in one place—without pretending to be a full clinical product.
+
+<p>
+  <img src="media/claude_stand.JPG" alt="Check-In" width="48%" />
+  <img src="media/team.jpeg" alt="Team Pic" width="48%" />
+</p>
 
 **Meridian** is a web app organized around three surfaces—**Home**, **Field Coach**, and **NutriMap**. **Field Coach** is paired with **iMessage** for onboarding and for logging meals, workouts, and fridge scans without opening the hub every time.
 
@@ -22,16 +27,23 @@ This repo was built for a **nutrition-focused hackathon prompt**. The idea is a 
 
 ![Meal log in iMessage](media/imsg_meal_log.png)
 
+![Profile](media/profile.png)
+
 - **Workout logs** — Log sessions by message (e.g. exercises, sets, how it felt); those entries sync into training history and the muscle map so volume isn’t scattered across screenshots or notes.
 
 ![Workout log in iMessage](media/imsg_workout_log.png)
 
+![Muscle Map](media/musclemap.png)
+
 - **Fridge scanning & meal suggestions** — Snap what’s in the fridge; the coach turns inventory into concrete meal ideas that match your goals, so “what can I make tonight?” gets answered from what you actually have.
 
-![Fridge scan request](media/imsg_fridge_req.png)
-
-![Fridge meal suggestions](media/imsg_fridge_resp.png)
+<p>
+  <img src="media/imsg_fridge_req.png" alt="Fridge request" width="48%" />
+  <img src="media/imsg_fridge_resp.png" alt="Fridge suggestions" width="48%" />
+</p>
 
 - **NutriMap** — A map-centered experience for discovering places to eat when you’re out: natural-language search, ranked results with a health-oriented lens, and restaurants plotted so “what’s good near me?” is answered visually as well as in text.
+
+![NutriMap](media/nutrimap.png)
 
 Behind the main UI there is a **Next.js** app with authentication and a database for the hub. The coach and the map each lean on separate services: a Node backend for messaging, nutrition resolution, and rollups, and a Python API that powers place search and scoring for NutriMap. Together they sketch an answer to the prompt: **health and wellness with minimal friction**
