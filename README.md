@@ -1,6 +1,6 @@
 # Meridian
 
-This project was built for a Claude Builder Club @ GT's Spring Hackathon, . The idea is a small personal hub that ties together eating well, staying accountable, and seeing your progress in one place—without pretending to be a full clinical product.
+This project was built for a Claude Builder Club @ GT's Spring Hackathon. The idea is a small personal hub that ties together eating well, staying accountable, and seeing your progress in one place—without all the friction involved in using other fitness tracking apps.
 
 <p>
   <img src="media/claude_stand.JPG" alt="Check-In" width="48%" />
