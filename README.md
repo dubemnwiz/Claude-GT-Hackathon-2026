@@ -46,4 +46,4 @@ This project was built for a Claude Builder Club @ GT's Spring Hackathon. The id
 
 ![NutriMap](media/nutrimap.png)
 
-Behind the main UI there is a **Next.js** app with authentication and a database for the hub. The coach and the map each lean on separate services: a Node backend for messaging, nutrition resolution, and rollups, and a Python API that powers place search and scoring for NutriMap. Together they sketch an answer to the prompt: **health and wellness with minimal friction**
+Behind the main UI there is a **Next.js** app with authentication and a database for the hub. The coach and the map each lean on separate services: a Node backend for messaging, nutrition resolution, and rollups, and a Python API that powers place search and scoring for NutriMap. The main goal is health and wellness with minimal friction.
