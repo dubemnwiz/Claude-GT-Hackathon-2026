@@ -32,7 +32,7 @@ export async function registerDashboardRoutes(app: FastifyInstance) {
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(today.getDate() - 6);
 
-    const [todayRollup, weekRollups, todayMeals] = await Promise.all([
+    const [todayRollup, weekRollups, todayMeals, recentWorkouts] = await Promise.all([
       prisma.dailyRollup.findUnique({
         where: {
           userId_dayDate: {
@@ -56,6 +56,14 @@ export async function registerDashboardRoutes(app: FastifyInstance) {
         },
         include: { mealItems: true },
         orderBy: { mealTime: "desc" },
+      }),
+      prisma.workoutEvent.findMany({
+        where: {
+          userId: user.id,
+          workoutDate: { gte: sevenDaysAgo },
+        },
+        orderBy: { workoutDate: "desc" },
+        take: 20,
       }),
     ]);
 
@@ -95,6 +103,8 @@ export async function registerDashboardRoutes(app: FastifyInstance) {
             fatG: Math.round(todayRollup.fatG),
             fiberG: Math.round(todayRollup.fiberG),
             mealsLogged: todayRollup.mealsLogged,
+            caloriesBurned: Math.round(todayRollup.caloriesBurned ?? 0),
+            workoutsLogged: todayRollup.workoutsLogged ?? 0,
           }
         : null,
       weekRollups: weekRollups.map((r) => ({
@@ -104,6 +114,15 @@ export async function registerDashboardRoutes(app: FastifyInstance) {
         carbsG: Math.round(r.carbsG),
         fatG: Math.round(r.fatG),
         mealsLogged: r.mealsLogged,
+      })),
+      recentWorkouts: recentWorkouts.map((w) => ({
+        id: w.id,
+        workoutLabel: w.workoutLabel,
+        muscleGroups: w.muscleGroups,
+        exercises: w.exercises,
+        durationMin: w.durationMin,
+        caloriesBurned: w.caloriesBurned,
+        workoutDate: w.workoutDate.toISOString(),
       })),
       todayMeals: todayMeals.map((meal) => ({
         id: meal.id,

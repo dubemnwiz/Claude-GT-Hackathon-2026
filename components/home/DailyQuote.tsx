@@ -55,17 +55,17 @@ export function DailyQuote() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="relative overflow-hidden rounded-2xl px-6 py-4 border border-border/30 bg-card/40 backdrop-blur-md"
+            className="relative overflow-hidden rounded-2xl px-6 py-4 border border-border bg-card"
         >
             {/* Decorative quote mark */}
             <span
-                className="absolute -top-4 left-4 text-8xl font-serif leading-none text-primary/10 select-none pointer-events-none"
+                className="absolute -top-4 left-4 text-8xl font-serif leading-none text-muted/60 select-none pointer-events-none"
                 aria-hidden
             >
                 &ldquo;
             </span>
             <div className="relative flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                <p className="text-sm md:text-base italic text-foreground/80 leading-relaxed flex-1">
+                <p className="text-sm md:text-base italic text-foreground leading-relaxed flex-1">
                     &ldquo;{quote.text}&rdquo;
                 </p>
                 <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">

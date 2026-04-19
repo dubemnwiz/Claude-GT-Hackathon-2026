@@ -29,23 +29,17 @@ export function ThemeSwitcher() {
     return (
         <button
             onClick={() => setTheme(isDark ? "light" : "dark")}
-            className="relative flex items-center justify-between w-10 h-6 sm:w-14 sm:h-7 rounded-full px-1 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            style={{
-                background: isDark
-                    ? "linear-gradient(135deg, hsl(258 90% 25%), hsl(230 35% 15%))"
-                    : "linear-gradient(135deg, hsl(45 100% 70%), hsl(196 90% 65%))",
-            }}
+            className="relative flex items-center justify-between w-10 h-6 sm:w-14 sm:h-7 rounded-full px-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring bg-muted"
             aria-label="Toggle theme"
         >
-            <Sun className="h-3.5 w-3.5 text-amber-200 shrink-0" />
-            <Moon className="h-3.5 w-3.5 text-indigo-200 shrink-0" />
+            <Sun className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <Moon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
 
             {/* Sliding knob */}
             <span
-                className="absolute top-1 w-4 h-4 rounded-full shadow-md transition-all duration-300"
+                className="absolute top-1 w-4 h-4 rounded-full shadow-sm transition-all duration-200 bg-primary"
                 style={{
                     left: isDark ? "calc(100% - 1.25rem)" : "0.25rem",
-                    background: isDark ? "hsl(258 90% 66%)" : "hsl(45 100% 55%)",
                 }}
             />
         </button>

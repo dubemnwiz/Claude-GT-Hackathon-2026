@@ -11,6 +11,8 @@ import { registerTelnyxRoutes } from "./routes/telnyx.js";
 export function buildApp() {
   const app = Fastify({
     logger: true,
+    // /simulate/sms sends base64 photos; default 1MB is too small for camera images.
+    bodyLimit: 25 * 1024 * 1024,
   });
 
   app.register(sensible);

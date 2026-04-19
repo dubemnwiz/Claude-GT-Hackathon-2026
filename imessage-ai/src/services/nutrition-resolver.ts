@@ -70,14 +70,8 @@ export async function resolveNutritionEstimate(input: NutritionEstimateInput) {
       confidenceScore: 0.35,
       mealLabel: "",
       items: [] as MealItemEstimate[],
-      totals: {
-        calories: 0,
-        proteinG: 0,
-        carbsG: 0,
-        fatG: 0,
-        fiberG: 0,
-      },
-      replyText: "send a quick description too so i can log that more accurately.",
+      totals: { calories: 0, proteinG: 0, carbsG: 0, fatG: 0, fiberG: 0 },
+      replyText: "got the photo! are you logging what you ate, or do you want suggestions on what to make? just say \"log\" or \"what should i eat\"",
     };
   }
 

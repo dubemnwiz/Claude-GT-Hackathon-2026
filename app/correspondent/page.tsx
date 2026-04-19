@@ -1,14 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { useSession } from "next-auth/react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Target, Zap, TrendingUp, TrendingDown, CheckCircle2, AlertTriangle,
   Send, Upload, Loader2, User, Dumbbell, Flame, Beef, Wheat, Droplets,
   ChevronDown, ChevronUp, Activity, Clock,
 } from "lucide-react"
-import { MuscleMap } from "@/components/fitness/MuscleMap"
+import { MuscleMap } from "@/components/correspondent/MuscleMap"
 import { getMusclesFromExercise, MuscleGroup } from "@/lib/muscle-mapping"
 import { format, startOfDay } from "date-fns"
 
@@ -44,6 +43,16 @@ interface Rollup {
   mealsLogged: number
 }
 
+interface AgentWorkout {
+  id: string
+  workoutLabel: string
+  muscleGroups: string[] | null
+  exercises: { name: string; muscleGroups: string[]; sets?: number; reps?: number; weightLbs?: number }[] | null
+  durationMin: number | null
+  caloriesBurned: number | null
+  workoutDate: string
+}
+
 interface DashboardData {
   profile: {
     firstName: string | null
@@ -70,19 +79,14 @@ interface DashboardData {
     carbsG: number
     fatG: number
     mealsLogged: number
+    caloriesBurned: number
+    workoutsLogged: number
   } | null
   weekRollups: Rollup[]
   todayMeals: TodayMeal[]
+  recentWorkouts: AgentWorkout[]
 }
 
-interface WorkoutLog {
-  id: string
-  workout: string
-  date: string
-  isPR: boolean
-  duration?: number | null
-  exercises?: { name: string; sets: { weight: number; reps: number; isPR: boolean }[] }[] | null
-}
 
 interface CoachSuggestion {
   name: string
@@ -148,17 +152,17 @@ function InsightCard({
   return (
     <div className={`flex items-start gap-3 rounded-xl px-4 py-3 border ${
       type === "win"
-        ? "bg-emerald-500/8 border-emerald-500/20"
-        : "bg-amber-500/8 border-amber-500/20"
+        ? "bg-primary/5 border-primary/20"
+        : "bg-muted border-border"
     }`}>
       {type === "win"
-        ? <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-emerald-500" />
-        : <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
+        ? <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+        : <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-muted-foreground" />
       }
       <div className="min-w-0">
         <p className="text-xs font-semibold text-foreground">{label}</p>
         <p className={`text-[11px] mt-0.5 leading-snug ${
-          type === "win" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
+          type === "win" ? "text-primary" : "text-muted-foreground"
         }`}>{detail}</p>
       </div>
     </div>
@@ -172,7 +176,7 @@ function MealCard({ meal }: { meal: TodayMeal }) {
   const time = meal.mealTime ? format(new Date(meal.mealTime), "h:mm a") : "just now"
 
   return (
-    <div className="rounded-xl bg-muted/20 border border-border/30 overflow-hidden">
+    <div className="rounded-xl bg-muted border border-border overflow-hidden">
       <button
         className="w-full flex items-center justify-between px-4 py-3 text-left"
         onClick={() => setOpen(o => !o)}
@@ -186,11 +190,11 @@ function MealCard({ meal }: { meal: TodayMeal }) {
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <span className="text-xs font-bold text-emerald-500">{Math.round(meal.totalCalories)}</span>
+            <span className="text-xs font-bold text-foreground">{Math.round(meal.totalCalories)}</span>
             <span className="text-[10px] text-muted-foreground"> cal</span>
           </div>
           <div className="text-right">
-            <span className="text-xs font-bold text-blue-400">{Math.round(meal.totalProteinG)}</span>
+            <span className="text-xs font-bold text-primary">{Math.round(meal.totalProteinG)}</span>
             <span className="text-[10px] text-muted-foreground">g</span>
           </div>
           {open ? <ChevronUp className="w-3 h-3 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 text-muted-foreground" />}
@@ -205,7 +209,7 @@ function MealCard({ meal }: { meal: TodayMeal }) {
             transition={{ duration: 0.18 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-3 space-y-1 border-t border-border/20 pt-2">
+            <div className="px-4 pb-3 space-y-1 border-t border-border pt-2">
               {meal.items.map((item, i) => (
                 <div key={i} className="flex items-center justify-between text-[11px]">
                   <span className="text-muted-foreground truncate max-w-[60%]">{item.name}</span>
@@ -225,9 +229,8 @@ function MealCard({ meal }: { meal: TodayMeal }) {
 // ── Main Page ──────────────────────────────────────────────────────────────────
 
 export default function CorrespondentPage() {
-  const { data: session } = useSession()
   const [data, setData] = useState<DashboardData | null>(null)
-  const [workouts, setWorkouts] = useState<WorkoutLog[]>([])
+  const [workouts, setWorkouts] = useState<AgentWorkout[]>([])
   const [chatInput, setChatInput] = useState("")
   const [chatMessages, setChatMessages] = useState<{ role: "user" | "sam"; text: string }[]>([])
   const [chatLoading, setChatLoading] = useState(false)
@@ -250,6 +253,7 @@ export default function CorrespondentPage() {
       }
       const json = await res.json()
       setData(json)
+      setWorkouts(json.recentWorkouts ?? [])
       setAgentError(null)
     } catch {
       setAgentError("Cannot reach agent — is it running on port 3001?")
@@ -261,15 +265,6 @@ export default function CorrespondentPage() {
     const id = setInterval(fetchDashboard, POLL_INTERVAL)
     return () => clearInterval(id)
   }, [fetchDashboard])
-
-  // Fetch workouts once (Meridian DB)
-  useEffect(() => {
-    if (!session) return
-    fetch("/api/fitness/workout")
-      .then(r => r.json())
-      .then(setWorkouts)
-      .catch(() => {})
-  }, [session])
 
   // Scroll chat to bottom
   useEffect(() => {
@@ -334,14 +329,19 @@ export default function CorrespondentPage() {
     }
     const now = startOfDay(new Date())
     workouts.forEach(log => {
-      const [y, m, d] = log.date.split("T")[0].split("-").map(Number)
-      const logLocal = startOfDay(new Date(y, m - 1, d))
-      const diffDays = Math.floor((now.getTime() - logLocal.getTime()) / 86400000)
+      const logDate = startOfDay(new Date(log.workoutDate))
+      const diffDays = Math.floor((now.getTime() - logDate.getTime()) / 86400000)
       if (diffDays > 14) return
       const intensity = Math.max(0, 1 - diffDays / 14)
+      // Use muscleGroups array from agent
+      const muscles = (log.muscleGroups ?? []) as MuscleGroup[]
+      muscles.forEach(m => {
+        if (m in heat) heat[m] = Math.min(1, heat[m] + intensity * 0.8)
+      })
+      // Also parse exercise names if available
       log.exercises?.forEach(ex => {
         getMusclesFromExercise(ex.name).forEach(m => {
-          heat[m] = Math.min(1, heat[m] + intensity * 0.8)
+          heat[m] = Math.min(1, heat[m] + intensity * 0.5)
         })
       })
     })
@@ -412,9 +412,9 @@ export default function CorrespondentPage() {
   }
 
   const goalColors = {
-    LOSE: { bg: "bg-red-500/15", text: "text-red-400", border: "border-red-500/30", label: "Lose Fat" },
-    MAINTAIN: { bg: "bg-blue-500/15", text: "text-blue-400", border: "border-blue-500/30", label: "Maintain" },
-    GAIN: { bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/30", label: "Build Muscle" },
+    LOSE: { bg: "bg-muted", text: "text-foreground", border: "border-border", label: "Lose Fat" },
+    MAINTAIN: { bg: "bg-primary/10", text: "text-primary", border: "border-primary/30", label: "Maintain" },
+    GAIN: { bg: "bg-muted", text: "text-foreground", border: "border-border", label: "Build Muscle" },
   }
 
   const gc = data?.goal ? goalColors[data.goal.goalType] : goalColors.MAINTAIN
@@ -430,20 +430,20 @@ export default function CorrespondentPage() {
             <p className="text-sm text-muted-foreground">Real-time health companion for correspondents on the go</p>
           </div>
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${agentError ? "bg-red-500" : "bg-emerald-500"} animate-pulse`} />
+            <div className={`w-2 h-2 rounded-full ${agentError ? "bg-destructive" : "bg-primary"} animate-pulse`} />
             <span className="text-xs text-muted-foreground">{agentError ? "Agent offline" : "Live"}</span>
           </div>
         </div>
 
         {agentError && (
-          <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+          <div className="rounded-xl bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
             {agentError}
           </div>
         )}
 
         {/* ── Zone 1: Profile strip ── */}
         {data && (
-          <div className="rounded-2xl bg-card/60 backdrop-blur border border-border/40 p-5">
+          <div className="rounded-2xl bg-card border border-border p-5">
             <div className="flex flex-wrap items-start gap-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-muted/40 flex items-center justify-center">
@@ -468,7 +468,7 @@ export default function CorrespondentPage() {
                       {Math.round(data.profile.currentWeightKg * 2.205)} lbs
                     </span>
                     {data.profile.startWeightKg && data.profile.currentWeightKg !== data.profile.startWeightKg && (
-                      <span className={`ml-1 text-[10px] ${data.profile.currentWeightKg < data.profile.startWeightKg ? "text-emerald-500" : "text-amber-500"}`}>
+                      <span className={`ml-1 text-[10px] ${data.profile.currentWeightKg < data.profile.startWeightKg ? "text-primary" : "text-muted-foreground"}`}>
                         ({data.profile.currentWeightKg < data.profile.startWeightKg ? "−" : "+"}{Math.abs(Math.round((data.profile.currentWeightKg - data.profile.startWeightKg) * 2.205))} lbs)
                       </span>
                     )}
@@ -509,7 +509,7 @@ export default function CorrespondentPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* Macro rings */}
-          <div className="rounded-2xl bg-card/60 backdrop-blur border border-border/40 p-5">
+          <div className="rounded-2xl bg-card border border-border p-5">
             <div className="flex items-center gap-2 mb-4">
               <Flame className="w-4 h-4 text-orange-500" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Today's Nutrition</h2>
@@ -541,12 +541,25 @@ export default function CorrespondentPage() {
                 unit="g" color="#eab308" icon={Droplets}
               />
             </div>
+            {(data?.todayRollup?.caloriesBurned ?? 0) > 0 && (
+              <div className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-orange-500/8 border border-orange-500/20 px-4 py-2">
+                <TrendingDown className="w-3.5 h-3.5 text-orange-500" />
+                <span className="text-xs text-orange-400 font-semibold">
+                  {data!.todayRollup!.caloriesBurned} cal burned today
+                </span>
+                {data?.goal?.targetCalories && (
+                  <span className="text-[10px] text-muted-foreground/60">
+                    · {Math.max(0, data.goal.targetCalories - (data.todayRollup?.calories ?? 0) + data.todayRollup!.caloriesBurned)} net remaining
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Meal feed */}
-          <div className="rounded-2xl bg-card/60 backdrop-blur border border-border/40 p-5 flex flex-col">
+          <div className="rounded-2xl bg-card border border-border p-5 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
-              <Clock className="w-4 h-4 text-sky-500" />
+              <Clock className="w-4 h-4 text-primary" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Today's Log</h2>
             </div>
             <div className="flex-1 space-y-2 overflow-y-auto max-h-48">
@@ -565,9 +578,9 @@ export default function CorrespondentPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* Insights + chat */}
-          <div className="rounded-2xl bg-card/60 backdrop-blur border border-border/40 p-5 flex flex-col gap-4">
+          <div className="rounded-2xl bg-card border border-border p-5 flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-500" />
+              <Zap className="w-4 h-4 text-muted-foreground" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">This Week</h2>
             </div>
 
@@ -628,14 +641,14 @@ export default function CorrespondentPage() {
           </div>
 
           {/* Fridge scanner */}
-          <div className="rounded-2xl bg-card/60 backdrop-blur border border-border/40 p-5 flex flex-col gap-4">
+          <div className="rounded-2xl bg-card border border-border p-5 flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-emerald-500" />
+              <Activity className="w-4 h-4 text-primary" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Fridge / Menu Scanner</h2>
             </div>
 
             <div
-              className={`flex-shrink-0 rounded-xl border-2 border-dashed transition-colors cursor-pointer ${
+              className={`shrink-0 rounded-xl border-2 border-dashed transition-colors cursor-pointer ${
                 dragOver ? "border-primary bg-primary/5" : "border-border/40 hover:border-border/70"
               } p-6 flex flex-col items-center justify-center gap-3`}
               onDragOver={e => { e.preventDefault(); setDragOver(true) }}
@@ -682,7 +695,7 @@ export default function CorrespondentPage() {
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-xs font-semibold text-foreground">{s.name}</p>
                     <div className="flex gap-2 shrink-0 text-[10px] text-muted-foreground">
-                      <span className="text-emerald-500 font-bold">{s.calories} cal</span>
+                      <span className="text-primary font-bold">{s.calories} cal</span>
                       <span>{s.proteinG}g P</span>
                     </div>
                   </div>
@@ -693,16 +706,13 @@ export default function CorrespondentPage() {
           </div>
         </div>
 
-        {/* ── Zone 4: Muscle map + workouts ── */}
-        <div className="rounded-2xl bg-card/60 backdrop-blur border border-border/40 p-5">
+          {/* ── Zone 4: Muscle map + workouts ── */}
+        <div className="rounded-2xl bg-card border border-border p-5">
           <div className="flex items-center gap-2 mb-6">
-            <Dumbbell className="w-4 h-4 text-violet-500" />
+            <Dumbbell className="w-4 h-4 text-foreground" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Training — Last 14 Days</h2>
-            {workouts.length === 0 && session && (
-              <span className="ml-auto text-[10px] text-muted-foreground/50">No workouts logged yet</span>
-            )}
-            {!session && (
-              <span className="ml-auto text-[10px] text-amber-500/70">Sign in to see workout data</span>
+            {workouts.length === 0 && (
+              <span className="ml-auto text-[10px] text-muted-foreground/50">Text Sam a workout to log it</span>
             )}
           </div>
 
@@ -710,7 +720,7 @@ export default function CorrespondentPage() {
             <MuscleMap heatMap={muscleHeat} className="max-w-sm" />
             <div className="mt-4 flex items-center justify-center gap-6">
               <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" /> Recently trained
+                <div className="w-3 h-3 rounded-full bg-primary" /> Recently trained
               </div>
               <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                 <div className="w-3 h-3 rounded-full bg-muted-foreground/20" /> Rested
@@ -719,29 +729,57 @@ export default function CorrespondentPage() {
           </div>
 
           {workouts.length > 0 && (
-            <div className="mt-6 grid grid-cols-3 gap-3">
-              {[
-                { label: "Workouts", value: workouts.length, icon: Dumbbell, color: "text-violet-500" },
-                { label: "PRs set", value: workouts.filter(w => w.isPR).length, icon: TrendingUp, color: "text-emerald-500" },
-                {
-                  label: "This week",
-                  value: workouts.filter(w => {
-                    const d = new Date(w.date)
-                    const now = new Date()
-                    const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
-                    return d >= weekAgo
-                  }).length,
-                  icon: Activity,
-                  color: "text-sky-500"
-                },
-              ].map(({ label, value, icon: Icon, color }) => (
-                <div key={label} className="rounded-xl bg-muted/20 border border-border/30 px-4 py-3 text-center">
-                  <Icon className={`w-4 h-4 mx-auto mb-1 ${color}`} />
-                  <p className="text-lg font-bold">{value}</p>
-                  <p className="text-[10px] text-muted-foreground">{label}</p>
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="mt-6 grid grid-cols-3 gap-3">
+                {[
+                  { label: "Sessions", value: workouts.length, icon: Dumbbell, color: "text-foreground" },
+                  {
+                    label: "Cal burned",
+                    value: workouts.reduce((s, w) => s + (w.caloriesBurned ?? 0), 0),
+                    icon: TrendingUp,
+                    color: "text-orange-500",
+                  },
+                  {
+                    label: "This week",
+                    value: workouts.filter(w => {
+                      const d = new Date(w.workoutDate)
+                      const weekAgo = new Date(Date.now() - 7 * 86400000)
+                      return d >= weekAgo
+                    }).length,
+                    icon: Activity,
+                    color: "text-primary",
+                  },
+                ].map(({ label, value, icon: Icon, color }) => (
+                  <div key={label} className="rounded-xl bg-muted/20 border border-border/30 px-4 py-3 text-center">
+                    <Icon className={`w-4 h-4 mx-auto mb-1 ${color}`} />
+                    <p className="text-lg font-bold">{value}</p>
+                    <p className="text-[10px] text-muted-foreground">{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 space-y-2">
+                {workouts.slice(0, 4).map(w => (
+                  <div key={w.id} className="flex items-center justify-between rounded-xl bg-muted/20 border border-border/30 px-4 py-2.5">
+                    <div>
+                      <p className="text-xs font-semibold">{w.workoutLabel}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {new Date(w.workoutDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                        {w.durationMin ? ` · ${w.durationMin} min` : ""}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      {w.caloriesBurned ? (
+                        <p className="text-xs font-bold text-orange-500">−{w.caloriesBurned} cal</p>
+                      ) : null}
+                      <p className="text-[10px] text-muted-foreground/60">
+                        {(w.muscleGroups ?? []).slice(0, 2).join(", ")}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
 

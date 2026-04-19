@@ -4,8 +4,8 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { IMessageSDK, isImageAttachment, downloadAttachment } from "@photon-ai/imessage-kit";
 
-const ALLOWED_NUMBER = process.env.ALLOWED_NUMBER ?? "+17202794283";
-const AGENT_URL = process.env.AGENT_URL ?? process.env.RAILWAY_URL ?? "http://localhost:3001";
+const ALLOWED_NUMBER = process.env.ALLOWED_NUMBER ?? "+14043535586";
+const AGENT_URL = process.env.AGENT_URL ?? process.env.RAILWAY_URL ?? "http://localhost:3000";
 
 const sdk = new IMessageSDK({ debug: true });
 
@@ -27,17 +27,42 @@ async function handleMessage(text: string, sender: string, attachments: Awaited<
       }
     }
 
+    const payload = { from: sender, body: text, images };
+    const payloadBytes = Buffer.byteLength(JSON.stringify(payload), "utf8");
+    const started = Date.now();
+    console.log(
+      `[agent] POST ${AGENT_URL}/simulate/sms images=${images.length} json≈${Math.round(payloadBytes / 1024)}KB`,
+    );
+
     const response = await fetch(`${AGENT_URL}/simulate/sms`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ from: sender, body: text, images }),
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(180_000),
     });
 
-    const data = (await response.json()) as { replyText?: string };
-
-    if (data.replyText) {
-      await sdk.send(sender, data.replyText);
+    const ms = Date.now() - started;
+    const raw = await response.text();
+    let data: { replyText?: string; ok?: boolean } = {};
+    try {
+      data = JSON.parse(raw) as { replyText?: string; ok?: boolean };
+    } catch {
+      console.error(`[agent] non-JSON response (${response.status}) after ${ms}ms:`, raw.slice(0, 500));
+      return;
     }
+
+    if (!response.ok) {
+      console.error(`[agent] HTTP ${response.status} after ${ms}ms:`, raw.slice(0, 500));
+      return;
+    }
+
+    if (!data.replyText?.trim()) {
+      console.error(`[agent] empty replyText after ${ms}ms`, data);
+      return;
+    }
+
+    console.log(`[agent] reply in ${ms}ms, sending (${data.replyText.length} chars)`);
+    await sdk.send(sender, data.replyText);
   } catch (error) {
     console.error("Error handling message:", error);
   }

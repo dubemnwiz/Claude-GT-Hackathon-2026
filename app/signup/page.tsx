@@ -60,20 +60,19 @@ export default function SignupPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
             >
-                <Card className="w-full bg-background/60 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/5">
-                    <CardHeader className="space-y-3 pb-6 border-b border-border/10 mb-6 mx-6 px-0 pt-6">
+                <Card className="w-full bg-card border-border shadow-lg">
+                    <CardHeader className="space-y-3 pb-6 border-b border-border mb-6 mx-6 px-0 pt-6">
                         <div className="flex justify-center mb-2">
                             <motion.div
                                 initial={{ y: -10, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.2 }}
-                                className="relative w-16 h-16"
+                                className="w-14 h-14 flex items-center justify-center rounded-2xl bg-primary/10 text-2xl"
                             >
-                                <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-                                <div className="relative z-10 w-full h-full flex items-center justify-center text-3xl">🧭</div>
+                                🧭
                             </motion.div>
                         </div>
-                        <CardTitle className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent text-center">Create Account</CardTitle>
+                        <CardTitle className="text-3xl font-bold tracking-tight text-foreground text-center">Create Account</CardTitle>
                         <CardDescription className="text-muted-foreground text-sm text-center">Join Meridian to organize your life.</CardDescription>
                     </CardHeader>
                     <CardContent className="px-6">
@@ -87,7 +86,7 @@ export default function SignupPage() {
                                         value={name} 
                                         onChange={(e) => setName(e.target.value)} 
                                         required 
-                                        className="bg-background/40 border-border/50 focus:border-primary/50 transition-colors h-11"
+                                        className="bg-muted border-border focus:border-primary transition-colors h-11"
                                         disabled={isLoading || isSuccess}
                                     />
                                 </div>
@@ -100,7 +99,7 @@ export default function SignupPage() {
                                         value={email} 
                                         onChange={(e) => setEmail(e.target.value)} 
                                         required 
-                                        className="bg-background/40 border-border/50 focus:border-primary/50 transition-colors h-11"
+                                        className="bg-muted border-border focus:border-primary transition-colors h-11"
                                         disabled={isLoading || isSuccess}
                                     />
                                 </div>
@@ -113,7 +112,7 @@ export default function SignupPage() {
                                         value={password} 
                                         onChange={(e) => setPassword(e.target.value)} 
                                         required 
-                                        className="bg-background/40 border-border/50 focus:border-primary/50 transition-colors h-11"
+                                        className="bg-muted border-border focus:border-primary transition-colors h-11"
                                         disabled={isLoading || isSuccess}
                                         minLength={8}
                                     />
@@ -135,7 +134,7 @@ export default function SignupPage() {
                                 <motion.div 
                                     initial={{ opacity: 0, height: 0 }} 
                                     animate={{ opacity: 1, height: "auto" }} 
-                                    className="flex items-center gap-2 text-sm text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-lg"
+                                    className="flex items-center gap-2 text-sm text-primary bg-primary/10 border border-primary/20 p-3 rounded-lg"
                                 >
                                     <CheckCircle2 className="w-4 h-4 shrink-0" />
                                     <p>Account created! Redirecting...</p>
@@ -143,7 +142,7 @@ export default function SignupPage() {
                             )}
 
                             <Button 
-                                className="w-full relative h-11 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all" 
+                                className="w-full relative h-11 transition-all" 
                                 type="submit" 
                                 disabled={isLoading || isSuccess}
                             >
@@ -163,7 +162,7 @@ export default function SignupPage() {
                             </Button>
                         </form>
                     </CardContent>
-                    <CardFooter className="flex justify-center bg-muted/30 py-4 mt-2 rounded-b-xl border-t border-border/50">
+                    <CardFooter className="flex justify-center bg-secondary py-4 mt-2 rounded-b-xl border-t border-border">
                         <p className="text-sm text-muted-foreground">
                             Already have an account? <Link href="/login" className="text-primary font-medium hover:underline transition-colors ml-1">Log in</Link>
                         </p>

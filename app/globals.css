@@ -21,84 +21,71 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   --radius-radius: var(--radius);
-
-  @keyframes aurora {
-    0% { background-position: 50% 50%, 50% 50%; }
-    100% { background-position: 350% 50%, 350% 50%; }
-  }
-
-  @keyframes float-particle {
-    0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.4; }
-    33% { transform: translateY(-30px) translateX(15px); opacity: 0.8; }
-    66% { transform: translateY(-15px) translateX(-20px); opacity: 0.6; }
-  }
 }
 
 @layer base {
-  /* ── Light mode ─────────────────────────────────────────────────────── */
+  /* ── Light mode — Apple-inspired minimalist ─────────────────────────── */
   :root {
-    /* Warm cream base with vibrant violet/indigo accents */
-    --background: 240 20% 97%;
-    --foreground: 240 15% 12%;
+    --background: 0 0% 98%;          /* #fafafa - clean off-white */
+    --foreground: 0 0% 9%;           /* #171717 - near black text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 15% 12%;
+    --card: 0 0% 100%;               /* Pure white cards */
+    --card-foreground: 0 0% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 15% 12%;
+    --popover-foreground: 0 0% 9%;
 
-    --primary: 252 82% 58%;          /* Vibrant violet */
+    --primary: 211 100% 50%;         /* #007AFF - Apple Blue */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 20% 93%;
-    --secondary-foreground: 240 15% 25%;
+    --secondary: 0 0% 96%;           /* #f5f5f5 - subtle gray */
+    --secondary-foreground: 0 0% 32%;
 
-    --muted: 240 15% 91%;
-    --muted-foreground: 240 10% 45%;
+    --muted: 0 0% 94%;               /* #f0f0f0 */
+    --muted-foreground: 0 0% 46%;    /* #757575 - muted text */
 
-    --accent: 196 90% 48%;           /* Electric cyan */
+    --accent: 211 100% 50%;          /* Same as primary for consistency */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;        /* #dc2626 - clean red */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 15% 88%;
-    --input: 240 15% 88%;
-    --ring: 252 82% 58%;
+    --border: 0 0% 90%;              /* #e5e5e5 - subtle borders */
+    --input: 0 0% 90%;
+    --ring: 211 100% 50%;
 
     --radius: 0.75rem;
   }
 
-  /* ── Dark / Night mode ───────────────────────────────────────────────── */
+  /* ── Dark mode — Apple-inspired ─────────────────────────────────────── */
   .dark {
-    /* Deep navy base with vivid neon accents */
-    --background: 230 35% 7%;        /* Very deep navy */
-    --foreground: 220 30% 94%;
+    --background: 0 0% 0%;           /* Pure black */
+    --foreground: 0 0% 98%;          /* Near white text */
 
-    --card: 228 30% 10%;
-    --card-foreground: 220 30% 94%;
+    --card: 0 0% 9%;                 /* #171717 - elevated surface */
+    --card-foreground: 0 0% 98%;
 
-    --popover: 228 30% 10%;
-    --popover-foreground: 220 30% 94%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 258 90% 66%;          /* Vivid purple */
+    --primary: 211 100% 55%;         /* #0A84FF - Apple Blue (dark) */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 228 25% 16%;
-    --secondary-foreground: 220 30% 85%;
+    --secondary: 0 0% 15%;           /* #262626 */
+    --secondary-foreground: 0 0% 80%;
 
-    --muted: 228 25% 14%;
-    --muted-foreground: 220 15% 55%;
+    --muted: 0 0% 12%;               /* #1f1f1f */
+    --muted-foreground: 0 0% 55%;    /* #8c8c8c */
 
-    --accent: 190 95% 50%;           /* Neon cyan */
-    --accent-foreground: 230 35% 7%;
+    --accent: 211 100% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 75% 55%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 228 25% 18%;
-    --input: 228 25% 16%;
-    --ring: 258 90% 66%;
+    --border: 0 0% 18%;              /* #2e2e2e - subtle borders */
+    --input: 0 0% 15%;
+    --ring: 211 100% 55%;
   }
 
   * {
@@ -137,17 +124,16 @@
 /* ── Utility classes ─────────────────────────────────────────────────── */
 
 @utility glass {
-  @apply bg-background/70 backdrop-blur-xl border border-border/40;
+  @apply bg-background/95 border border-border;
 }
 
 @utility glass-card {
-  @apply bg-card/60 backdrop-blur-md border border-border/30 hover:bg-card/80 transition-all duration-300;
+  @apply bg-card border border-border hover:bg-secondary/50 transition-all duration-200;
 }
 
 @utility glass-dark {
   background: rgba(255 255 255 / 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255 255 255 / 0.08);
+  border: 1px solid rgba(255 255 255 / 0.06);
 }
 
 @utility perspective-1000 {

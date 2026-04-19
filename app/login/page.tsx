@@ -55,20 +55,19 @@ function LoginForm() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
             >
-                <Card className="w-full bg-background/60 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/5">
-                    <CardHeader className="space-y-3 pb-6 border-b border-border/10 mb-6 mx-6 px-0 pt-6">
+                <Card className="w-full bg-card border-border shadow-lg">
+                    <CardHeader className="space-y-3 pb-6 border-b border-border mb-6 mx-6 px-0 pt-6">
                         <div className="flex justify-center mb-2">
                             <motion.div
                                 initial={{ y: -10, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.2 }}
-                                className="relative w-16 h-16"
+                                className="w-14 h-14 flex items-center justify-center rounded-2xl bg-primary/10 text-2xl"
                             >
-                                <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-                                <div className="relative z-10 w-full h-full flex items-center justify-center text-3xl">🧭</div>
+                                🧭
                             </motion.div>
                         </div>
-                        <CardTitle className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent text-center">Welcome Back</CardTitle>
+                        <CardTitle className="text-3xl font-bold tracking-tight text-foreground text-center">Welcome Back</CardTitle>
                         <CardDescription className="text-muted-foreground text-sm text-center">Enter your credentials to access your OS.</CardDescription>
                     </CardHeader>
                     <CardContent className="px-6">
@@ -83,7 +82,7 @@ function LoginForm() {
                                         value={email} 
                                         onChange={(e) => setEmail(e.target.value)} 
                                         required 
-                                        className="bg-background/40 border-border/50 focus:border-primary/50 transition-colors h-11"
+                                        className="bg-muted border-border focus:border-primary transition-colors h-11"
                                         disabled={isLoading}
                                     />
                                 </div>
@@ -99,7 +98,7 @@ function LoginForm() {
                                         value={password} 
                                         onChange={(e) => setPassword(e.target.value)} 
                                         required
-                                        className="bg-background/40 border-border/50 focus:border-primary/50 transition-colors h-11"
+                                        className="bg-muted border-border focus:border-primary transition-colors h-11"
                                         disabled={isLoading}
                                     />
                                 </div>
@@ -116,7 +115,7 @@ function LoginForm() {
                                 </motion.div>
                             )}
 
-                            <Button className="w-full relative h-11 group shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all" type="submit" disabled={isLoading}>
+                            <Button className="w-full relative h-11 transition-all" type="submit" disabled={isLoading}>
                                 {isLoading ? (
                                     <>
                                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -132,16 +131,16 @@ function LoginForm() {
 
                         {/* Divider */}
                         <div className="flex items-center gap-3 my-1">
-                            <div className="flex-1 h-px bg-border/40" />
+                            <div className="flex-1 h-px bg-border" />
                             <span className="text-xs text-muted-foreground">or</span>
-                            <div className="flex-1 h-px bg-border/40" />
+                            <div className="flex-1 h-px bg-border" />
                         </div>
 
                         {/* Google sign-in */}
                         <Button
                             type="button"
                             variant="outline"
-                            className="w-full h-11 border-border/50 bg-background/40 hover:bg-background/60 flex items-center gap-2.5"
+                            className="w-full h-11 border-border bg-secondary hover:bg-muted flex items-center gap-2.5"
                             onClick={() => signIn("google", { callbackUrl: "/" })}
                             disabled={isLoading}
                         >
@@ -155,7 +154,7 @@ function LoginForm() {
                             Continue with Google
                         </Button>
                     </CardContent>
-                    <CardFooter className="flex justify-center bg-muted/30 py-4 mt-2 rounded-b-xl border-t border-border/50">
+                    <CardFooter className="flex justify-center bg-secondary py-4 mt-2 rounded-b-xl border-t border-border">
                         <p className="text-sm text-muted-foreground">
                             Don't have an account? <Link href="/signup" className="text-primary font-medium hover:underline transition-colors ml-1">Sign up</Link>
                         </p>

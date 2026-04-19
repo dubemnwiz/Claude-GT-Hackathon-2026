@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
     return {
         name: "Meridian",
         short_name: "Meridian",
-        description: "Your personal life OS — journal, fitness, planning, and more.",
+        description: "Your personal life OS — NutriMap, Field Coach, and more.",
         start_url: "/",
         display: "standalone",
         background_color: "#0b0f1a",
@@ -34,24 +34,17 @@ export default function manifest(): MetadataRoute.Manifest {
         ],
         shortcuts: [
             {
-                name: "New Task",
-                short_name: "Task",
-                description: "Add a new task to your plan",
-                url: "/planning",
+                name: "Field Coach",
+                short_name: "Coach",
+                description: "Open Field Coach",
+                url: "/correspondent",
                 icons: [{ src: "/apple-icon", sizes: "192x192" }],
             },
             {
-                name: "Quick Dump",
-                short_name: "Dump",
-                description: "Drop a link or idea",
-                url: "/mind-dump",
-                icons: [{ src: "/apple-icon", sizes: "192x192" }],
-            },
-            {
-                name: "Log Workout",
-                short_name: "Workout",
-                description: "Log your daily workout",
-                url: "/fitness",
+                name: "NutriMap",
+                short_name: "Map",
+                description: "Search places and nutrition",
+                url: "/nutrimap",
                 icons: [{ src: "/apple-icon", sizes: "192x192" }],
             },
         ]

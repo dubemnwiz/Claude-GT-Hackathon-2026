@@ -70,6 +70,7 @@ model User {
   coachMemory    CoachMemory?
   corrections    Correction[]
   onboarding     OnboardingSession?
+  workoutEvents  WorkoutEvent[]
 }
 
 model Profile {
@@ -195,20 +196,36 @@ model Clarification {
 }
 
 model DailyRollup {
-  id            String   @id @default(cuid())
-  userId        String
-  dayDate       DateTime
-  calories      Float    @default(0)
-  proteinG      Float    @default(0)
-  carbsG        Float    @default(0)
-  fatG          Float    @default(0)
-  fiberG        Float    @default(0)
-  mealsLogged   Int      @default(0)
-  updatedAt     DateTime @updatedAt
-  createdAt     DateTime @default(now())
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String   @id @default(cuid())
+  userId          String
+  dayDate         DateTime
+  calories        Float    @default(0)
+  proteinG        Float    @default(0)
+  carbsG          Float    @default(0)
+  fatG            Float    @default(0)
+  fiberG          Float    @default(0)
+  mealsLogged     Int      @default(0)
+  caloriesBurned  Float    @default(0)
+  workoutsLogged  Int      @default(0)
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, dayDate])
+}
+
+model WorkoutEvent {
+  id             String   @id @default(cuid())
+  userId         String
+  rawText        String
+  workoutLabel   String
+  exercises      Json?
+  muscleGroups   Json?
+  durationMin    Int?
+  caloriesBurned Int?
+  workoutDate    DateTime @default(now())
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CoachMemory {

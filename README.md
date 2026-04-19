@@ -1,54 +1,13 @@
-# Meridian — Personal Life OS
+# Meridian
 
-A full-stack personal productivity and life-tracking app. Single-user, self-hosted on Vercel with a Neon PostgreSQL database.
+This repo was built for a **nutrition-focused hackathon prompt**. The idea is a small personal hub that ties together eating well, staying accountable, and seeing your progress in one place—without pretending to be a full clinical product.
 
-## Stack
+**Meridian** is a web app with three main ideas:
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 16 (App Router) + TypeScript 5 |
-| Styling | Tailwind CSS 4 + Framer Motion |
-| Auth | NextAuth v4 (JWT + PrismaAdapter) |
-| ORM | Prisma 6 |
-| Database | Neon PostgreSQL (prod) |
-| Storage | Vercel Blob (progress photos) |
-| PWA | Serwist 9 (disabled in dev) |
-| Icons | Lucide React |
-| Drag & Drop | @dnd-kit |
+- **Home** — A signed-in landing surface: time, weather, a daily line of focus, motivational copy, and personal countdowns. It’s meant to feel like a calm dashboard, not another tracker grid.
 
-## Quick Start
+- **Field Coach** — A companion view for an agentic coach that ingests what you eat and how you train (by iMessage), resolves foods into macros, rolls daily totals, and surfaces workouts with a muscle map so you can see load across muscle groups—not just numbers on a log.
 
-```bash
-cp .env.example .env.local   # fill in vars
-npm install
-npm run dev                  # http://localhost:3000
-```
+- **NutriMap** — A map-centered experience for discovering places to eat when you’re out: natural-language search, ranked results with a health-oriented lens, and restaurants plotted so “what’s good near me?” is answered visually as well as in text.
 
-## Build & Deploy
-
-```bash
-npm run build   # prisma generate + db push + webpack build (4 GB memory)
-npm run start   # production
-```
-
-Deployed on Vercel. Build uses explicit webpack (not Turbopack) for stability. `prisma db push --accept-data-loss` runs non-blocking at build time.
-
-## Environment Variables
-
-```env
-DATABASE_POSTGRES_PRISMA_URL          # Neon pooled connection
-DATABASE_POSTGRES_URL_NON_POOLING     # Neon direct connection (migrations)
-NEXTAUTH_SECRET                       # random string
-NEXTAUTH_URL                          # https://your-domain.com
-GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET
-BLOB_READ_WRITE_TOKEN                 # Vercel Blob
-```
-
-## Key Docs
-
-- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — deep technical guide (components, API, data flow)
-- [`CLAUDE.md`](./CLAUDE.md) — AI assistant context
-- [`GOOGLE_SETUP.md`](./GOOGLE_SETUP.md) — Google OAuth + Calendar setup
-- [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md) — common issues
-- [`FITNESS_ROADMAP.md`](./FITNESS_ROADMAP.md) — fitness feature backlog
+Behind the main UI there is a **Next.js** app with authentication and a database for the hub. The coach and the map each lean on separate services: a Node backend for messaging, nutrition resolution, and rollups, and a Python API that powers place search and scoring for NutriMap. Together they sketch an answer to the prompt: **health and wellness with minimal friction**

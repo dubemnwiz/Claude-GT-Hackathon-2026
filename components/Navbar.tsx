@@ -4,7 +4,7 @@ import { useState, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Home, Book, Dumbbell, LayoutDashboard, CalendarDays, LogOut, Library, Plus, Radio } from "lucide-react"
+import { Home, LogOut, Plus, Radio, MapPin } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { ThemeSwitcher } from "@/components/ThemeSwitcher"
@@ -12,12 +12,8 @@ import { MobileActionDrawer } from "@/components/ui/MobileActionDrawer"
 
 const routes = [
     { label: "Home", href: "/", icon: Home },
-    { label: "Journal", href: "/diary", icon: Book },
-    { label: "Fitness", href: "/fitness", icon: Dumbbell },
     { label: "Field Coach", href: "/correspondent", icon: Radio },
-    { label: "Mind Dump", href: "/mind-dump", icon: LayoutDashboard },
-    { label: "Planning", href: "/planning", icon: CalendarDays },
-    { label: "Media", href: "/media", icon: Library },
+    { label: "NutriMap", href: "/nutrimap", icon: MapPin },
 ]
 
 function DockItem({
@@ -56,8 +52,8 @@ function DockItem({
                 className={cn(
                     "relative flex flex-col items-center justify-center w-9 h-9 sm:w-12 sm:h-12 rounded-2xl transition-colors duration-200 cursor-pointer group",
                     active
-                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/40"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
             >
                 <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -94,12 +90,12 @@ export function Navbar() {
                 onMouseLeave={() => mouseX.set(Infinity)}
                 className={cn(
                     "flex items-center gap-0.5 sm:gap-1 px-2 sm:px-4 py-2 sm:py-3 rounded-3xl",
-                    "border border-border/40",
-                    "bg-background/70 backdrop-blur-2xl",
-                    "shadow-xl shadow-black/20"
+                    "border border-border",
+                    "bg-card/95 backdrop-blur-md",
+                    "shadow-lg shadow-black/5"
                 )}
             >
-                {routes.slice(0, 3).map((route) => (
+                {routes.slice(0, 2).map((route) => (
                     <DockItem
                         key={route.href}
                         href={route.href}
@@ -112,19 +108,19 @@ export function Navbar() {
 
                 {/* Central Action Button */}
                 <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setIsActionOpen(true)}
                     className={cn(
                         "flex items-center justify-center mx-1 w-11 h-11 sm:w-14 sm:h-14 rounded-2xl",
-                        "bg-primary text-primary-foreground shadow-lg shadow-primary/30",
-                        "transition-all duration-300"
+                        "bg-primary text-primary-foreground",
+                        "transition-all duration-200"
                     )}
                 >
                     <Plus className="h-6 w-6 sm:h-7 sm:w-7" />
                 </motion.button>
 
-                {routes.slice(3).map((route) => (
+                {routes.slice(2).map((route) => (
                     <DockItem
                         key={route.href}
                         href={route.href}
